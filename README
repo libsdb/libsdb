@@ -1,0 +1,108 @@
+
+  libsdb: Amazon SimpleDB C Bindinds
+======================================
+
+Written by   : Peter Macko, Harvard University
+Contact      : pmacko@eecs.harvard.edu
+Project Page : http://sourceforge.net/projects/libsdb/
+
+libsdb is a C library for accessing Amazon SimpleDB from C or C++ programs.
+This is a free software distributed under a BSD-like license; please see
+LICENSE for details.
+
+
+  Prerequisites
+-----------------
+
+Before installing this library, make sure that the following packages and
+all their prerequisities are installed:
+
+  * gcc-c++
+  * curl-devel
+  * libxml2-devel
+  * openssl-devel
+
+
+  Install from Source
+-----------------------
+
+Perform the following sequence of commands:
+
+  * make
+  * sudo make install
+
+
+  Linking with your Program
+-----------------------------
+
+When compiling your program, use the flags returned by the following program:
+
+  sdb-config --cflags
+
+When linking, youse the following:
+
+  sdb-config --libs
+
+
+  Using in a Program
+----------------------
+
+First, include sdb.h:
+
+  #include <sdb.h>
+
+Inside your program, first initialize the library by calling:
+
+  sdb_global_init();
+
+Note that calling this function will also initialize Curl. Then, declare and
+initialize a SDB handle:
+
+  struct SDB* sdb;
+  ...
+  sdb_init(&sdb, aws_id, aws_secret);
+
+The library functions are not thread safe, so you should not share an SDB
+handle between multiple thread. When you are done, destroy the handle using:
+
+  sdb_destroy(&sdb);
+
+And then perform a global cleanup:
+
+  sdb_global_cleanup();
+
+
+  Running a Command
+---------------------
+
+If a command produces output, first declare a variable to which it will be
+assigned:
+
+  struct sdb_response* res;
+
+Then call the command. For example, in order to get all attributes of a given
+item:
+  
+  int r;
+  ...
+  r = sdb_get_all(sdb, "domain", "item", &res);
+
+Every command returns an integer. Use the macro SDB_FAILED(r) in order to
+determine whether the command returned an error. The constants for error
+codes are declared at the top of sdb.h.
+
+Assuming the command succeeded, res would contain the list of all attributes
+of the given item. In particular, res->size contains the number of the returned
+key-value pairs, which can be accessed through the res->attributes array. The
+following code will print the result:
+
+  for (i = 0; i < res->size; i++) {
+    printf("%s = %s\n", res->attributes[i].name, res->attributes[i].value);
+  }
+
+When you are done, release the response structure by calling:
+
+  sdb_free(&res);
+
+All commands and the response structure are documented by the Doxygen-style
+comments in the include file sdb.h.
