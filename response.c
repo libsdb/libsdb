@@ -76,6 +76,9 @@ struct sdb_response_internal* sdb_response_internal_allocate(void)
 	r->next_token = NULL;
 	r->errout = NULL;
 	r->next = NULL;
+	r->params = NULL;
+	r->command = NULL;
+	r->to_free = NULL;
 	r->empty_string[0] = '\0';
 }
 
@@ -90,6 +93,8 @@ void sdb_response_cleanup(struct sdb_response* r)
 	int i;
 	struct sdb_response_internal* p;
 	struct sdb_response_internal* next = NULL;
+	struct sdb_response_to_free* f;
+	struct sdb_response_to_free* fnext = NULL;
 	
 	
 	// Free the response
@@ -114,6 +119,21 @@ void sdb_response_cleanup(struct sdb_response* r)
 		
 		if (p->doc != NULL) {
 			xmlFreeDoc(p->doc);
+		}
+		
+		if (p->params != NULL) {
+			sdb_params_free(p->params);
+		}
+		
+		for (f = p->to_free; f != NULL; f = fnext) {
+			fnext = f->next;
+			free(f->p);
+			free(f);
+			f = fnext;
+		}
+		
+		if (p->command != NULL) {
+			free(p->command);
 		}
 		
 		free(p);
@@ -145,6 +165,11 @@ void sdb_response_prepare_append(struct sdb_response* r)
 	struct sdb_response_internal* next = r->internal;
 	r->internal = sdb_response_internal_allocate();
 	r->internal->next = next;
+	
+	r->internal->params = next->params;
+	r->internal->command = next->command;
+	r->internal->next->params = NULL;
+	r->internal->next->command = NULL;
 	
 	r->return_code = 0;
 	r->error = 0;

@@ -192,6 +192,7 @@ struct SDB
 	// Other configuration
 	
 	FILE* errout;
+	int auto_next;
 	
 	
 	// Statistics

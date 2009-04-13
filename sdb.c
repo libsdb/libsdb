@@ -184,6 +184,7 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret)
 	(*sdb)->retry_delay = 5000;		/* = 5 ms */
 	
 	(*sdb)->errout = NULL;
+	(*sdb)->auto_next = 1;
 	
 	sdb_clear_statistics(*sdb);
 	
@@ -427,6 +428,18 @@ void sdb_set_retry(struct SDB* sdb, int count, int delay)
 } 
 
 
+/**
+ * Set automatic handling of the NEXT tokens
+ * 
+ * @param sdb the SimpleDB handle
+ * @param value zero disables automatic NEXT handling, a non-zero value enables it
+ */
+void sdb_set_auto_next(struct SDB* sdb, int value)
+{
+	sdb->auto_next = value == 0 ? 0 : 1;
+}
+
+
 #define SDB_COMMAND_PREPARE(argc)									\
 	struct sdb_params* __params = sdb_params_alloc(argc);
 	
@@ -452,7 +465,8 @@ void sdb_set_retry(struct SDB* sdb, int count, int delay)
 	int __r = SDB_OK;												\
 	int __retries = sdb->retry_count;								\
 	*response = NULL;												\
-	while (*response == NULL ? TRUE : (*response)->has_more) {		\
+	while (*response == NULL ? TRUE : ((*response)->has_more		\
+										&& sdb->auto_next)) {		\
 		if (SDB_FAILED(__r = sdb_execute_rs(sdb, name,				\
 			__params, response))) {									\
 			if (__r == SDB_E_AWS_SERVICE_UNAVAILABLE) {				\
@@ -473,6 +487,89 @@ void sdb_set_retry(struct SDB* sdb, int count, int delay)
 									  NULL, NULL, NULL);			\
 	sdb_params_free(__params);										\
 	return __r;
+
+/**
+ * Get more data (if the automatic handling of NEXT tokens is disabled)
+ *
+ * @param sdb the SimpleDB handle
+ * @param response the result set of the previous call
+ * @param append whether to append the data to the result set or replace it
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_next(struct SDB* sdb, struct sdb_response** response, int append)
+{
+	int __r = SDB_OK;
+	int __retries = sdb->retry_count;
+	
+	
+	// First, make sure that we actually have data
+	
+	if (!(*response)->has_more) {
+		if (append) return SDB_OK;
+		
+		sdb_response_cleanup(*response);
+		sdb_response_init(*response);
+		return SDB_OK;
+	}
+	
+	
+	// Clean up the response structure if we are not appending
+	
+	if (!append) {
+		
+		// Copy the NEXT token and the command
+		
+		char* next = (char*) malloc(strlen((*response)->internal->next_token) + 4);
+		strcpy(next, (*response)->internal->next_token);
+		
+		char* command = (char*) malloc(strlen((*response)->internal->command) + 4);
+		strcpy(command, (*response)->internal->command);
+		
+		
+		// Copy the parameters
+		
+		struct sdb_params* params = sdb_params_deep_copy((*response)->internal->params);
+		
+		
+		// Recreate the response
+		
+		sdb_response_cleanup(*response);
+		sdb_response_init(*response);
+		
+		(*response)->has_more = TRUE;
+		(*response)->internal->next_token = next;
+		(*response)->internal->command = command;
+		(*response)->internal->params = params;
+		
+		(*response)->internal->to_free = (struct sdb_response_to_free*) malloc(sizeof(struct sdb_response_to_free));
+		(*response)->internal->to_free->p = next;
+		(*response)->internal->to_free->next = NULL;
+	}
+	
+	
+	// Now run the query
+	
+	struct sdb_params* params = (*response)->internal->params;
+	char* command = (*response)->internal->command;
+	assert(params);
+	assert(command);
+	
+	do {
+		if (SDB_FAILED(__r = sdb_execute_rs(sdb, command, params, response))) {
+			if (__r == SDB_E_AWS_SERVICE_UNAVAILABLE) {
+				if (__retries-- <= 0) {
+					sdb_free(response); break;
+				}
+				usleep(sdb->retry_delay);
+				sdb->stat.num_retries++;
+			}
+			else break;
+		}
+	}
+	while ((*response)->has_more && sdb->auto_next);
+	
+	return __r;
+}
 
 /**
  * Create a domain
@@ -895,9 +992,30 @@ int sdb_multi_run(struct SDB* sdb, struct sdb_multi_response** response)
 			(*response)->responses[index]->multi_handle = msg->easy_handle;
 			(*response)->responses[index]->return_code = r;
 			
-			if ((*response)->responses[index]->has_more) {
+			if ((*response)->responses[index]->has_more && sdb->auto_next) {
 				retry = TRUE;
 				has_more = TRUE;
+			}
+				
+			
+			// Save the parameters in the case manual NEXT handling is allowed
+			
+			if ((*response)->responses[index]->has_more) {
+				if (!sdb->auto_next && (*response)->responses[index]->internal->params == NULL) {
+					if ((*response)->responses[index]->internal->next == NULL) {
+						(*response)->responses[index]->internal->params = sdb_params_deep_copy(m->params);
+						(*response)->responses[index]->internal->command = (char*) malloc(strlen(m->command) + 4);
+						strcpy((*response)->responses[index]->internal->command, m->command);
+					}
+					else if ((*response)->responses[index]->internal->params == NULL) {
+						(*response)->responses[index]->internal->params = (*response)->responses[index]->internal->next->params;
+						(*response)->responses[index]->internal->command = (*response)->responses[index]->internal->next->command;
+						(*response)->responses[index]->internal->next->params = NULL;
+						(*response)->responses[index]->internal->next->command = NULL;
+						assert((*response)->responses[index]->internal->params);
+						assert((*response)->responses[index]->internal->command);
+					}
+				}
 			}
 		}
 		
@@ -938,6 +1056,8 @@ int sdb_multi_run(struct SDB* sdb, struct sdb_multi_response** response)
 	
 	int ri;
 	struct sdb_retry_data* R;
+	
+	if (!sdb->auto_next) has_more = FALSE;
 	
 	for (ri = 0; has_more || ri < sdb->retry_count; has_more ? ri : ri++) {
 		if (retry_list == NULL) break;
@@ -1028,9 +1148,28 @@ int sdb_multi_run(struct SDB* sdb, struct sdb_multi_response** response)
 				(*pres)->multi_handle = m->user_data_2;
 				(*pres)->return_code = r;
 				
-				if ((*pres)->has_more) {
+				if ((*pres)->has_more && sdb->auto_next) {
 					retry = TRUE;
 					has_more = TRUE;
+				}
+				
+				
+				// Save the parameters in the case manual NEXT handling is allowed
+				
+				if ((*pres)->has_more && !sdb->auto_next && (*pres)->internal->params == NULL) {
+					if ((*pres)->internal->next == NULL) {
+						(*pres)->internal->params = sdb_params_deep_copy(m->params);
+						(*pres)->internal->command = (char*) malloc(strlen(m->command) + 4);
+						strcpy((*pres)->internal->command, m->command);
+					}
+					else {
+						(*pres)->internal->params = (*pres)->internal->next->params;
+						(*pres)->internal->command = (*pres)->internal->next->command;
+						(*pres)->internal->next->params = NULL;
+						(*pres)->internal->next->command = NULL;
+						assert((*pres)->internal->params);
+						assert((*pres)->internal->command);
+					}
 				}
 			}
 			

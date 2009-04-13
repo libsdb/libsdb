@@ -90,17 +90,43 @@ int main(int argc, char** argv)
 {
 	struct SDB* sdb;
 	struct sdb_response* res;
+	FILE *f;
 	
 	char aws_id[BUF_SIZE], aws_secret[BUF_SIZE]; 
 	char cmd[BUF_SIZE], arg1[BUF_SIZE], arg2[BUF_SIZE], arg3[BUF_SIZE], arg4[BUF_SIZE];
 	
 	
-	// Ask for the AWS access information
+	// Ask for the AWS access information or get it from /etc/passwd-s3fs, if available
 	
-	printf("\nlibsdb Sample Application\n\n");
+	aws_id[0] = aws_secret[0] = '\0';
 	
-	READ2("AWS ID", aws_id);
-	READ2("AWS Secret", aws_secret);
+	if ((f = fopen("/etc/passwd-s3fs", "r")) != NULL) {
+		if (fgets(aws_id, BUF_SIZE, f) != NULL) {
+			
+			char* p = strchr(aws_id, ':');
+			if (p != NULL) {
+				
+				*p = '\0';
+				strncpy(aws_secret, p + 1, BUF_SIZE);
+				aws_secret[BUF_SIZE-1] = '\0';
+				
+				for (p = aws_secret; *p != '\0'; p++) {
+					if (isspace(*p)) {
+						*p = '\0';
+						break;
+					}
+				}
+			}
+		}
+		
+		fclose(f);
+	}
+	
+	if (aws_id[0] == '\0' || aws_secret[0] == '\0') {
+		printf("\nlibsdb Sample Application\n\n");
+		READ2("AWS ID", aws_id);
+		READ2("AWS Secret", aws_secret);
+	}
 	
 	
 	// Initialize
@@ -233,6 +259,31 @@ int main(int argc, char** argv)
 				} 
 			}
 			sdb_multi_free(&res);
+			continue;
+		}
+		
+		if (strcmp(cmd, "z") == 0) {
+			struct sdb_response* res;
+			int r, num = 10;
+			sdb_set_auto_next(sdb, FALSE);
+			r = sdb_list_domains(sdb, &res);
+			sdb_print(res);
+			while (res != NULL && res->has_more) {
+				r = sdb_next(sdb, &res, TRUE);
+				sdb_print(res);
+				if (!(num --> 0)) break;
+			}
+			sdb_free(&res);
+			printf("---\n"); num = 10;
+			r = sdb_list_domains(sdb, &res);
+			sdb_print(res);
+			while (res != NULL && res->has_more) {
+				r = sdb_next(sdb, &res, FALSE);
+				sdb_print(res);
+				if (!(num --> 0)) break;
+			}
+			sdb_free(&res);
+			sdb_set_auto_next(sdb, TRUE);
 			continue;
 		}
 		

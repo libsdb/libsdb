@@ -46,6 +46,15 @@ extern "C" {
 
 
 /**
+ * A data entry to be freed later during cleanup
+ */
+struct sdb_response_to_free {
+	void* p;
+	struct sdb_response_to_free* next;
+};
+
+
+/**
  * An internal response structure
  */
 struct sdb_response_internal
@@ -68,6 +77,17 @@ struct sdb_response_internal
 	// Special stuff
 	
 	char empty_string[2];
+	
+	
+	// Data for manual NEXT processing
+	
+	struct sdb_params* params;
+	char* command;
+	
+	
+	// Additional pointers to free during cleanup
+	
+	struct sdb_response_to_free* to_free;
 	
 	
 	// Internal structure

@@ -391,7 +391,15 @@ void sdb_set_error_file(struct SDB* sdb, FILE* f);
  * @param delay the number of milliseconds between two retries
  */
 void sdb_set_retry(struct SDB* sdb, int count, int delay); 
-
+	
+/**
+ * Set automatic handling of the NEXT tokens
+ * 
+ * @param sdb the SimpleDB handle
+ * @param value zero disables automatic NEXT handling, a non-zero value enables it
+ */
+void sdb_set_auto_next(struct SDB* sdb, int value); 
+	
 
 
 /*****************************************************************************/
@@ -436,6 +444,16 @@ void sdb_clear_statistics(struct SDB* sdb);
 /*                              C O M M A N D S                              */
 /*                                                                           */
 /*****************************************************************************/
+
+/**
+ * Get more data (if the automatic handling of NEXT tokens is disabled)
+ *
+ * @param sdb the SimpleDB handle
+ * @param response the result set of the previous call
+ * @param append whether to append the data to the result set or replace it
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_next(struct SDB* sdb, struct sdb_response** response, int append);
 
 /**
  * Create a domain

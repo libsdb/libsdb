@@ -860,6 +860,26 @@ int sdb_execute_rs(struct SDB* sdb, const char* cmd, struct sdb_params* _params,
 		return SDB_AWS_ERROR(__ret);
 	}
 	
+	
+	// Save the parameters in the case manual NEXT handling is allowed
+	
+	if (!sdb->auto_next && (*response)->has_more) {
+		if ((*response)->internal->next == NULL) {
+			(*response)->internal->params = sdb_params_deep_copy(_params);
+			(*response)->internal->command = (char*) malloc(strlen(cmd) + 4);
+			strcpy((*response)->internal->command, cmd);
+		}
+		else if ((*response)->internal->params == NULL) {
+			(*response)->internal->params = (*response)->internal->next->params;
+			(*response)->internal->command = (*response)->internal->next->command;
+			(*response)->internal->next->params = NULL;
+			(*response)->internal->next->command = NULL;
+			assert((*response)->internal->params);
+			assert((*response)->internal->command);
+		}
+	}
+	
+	
 	return SDB_OK;
 }
 
