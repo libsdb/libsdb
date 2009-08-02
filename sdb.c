@@ -733,6 +733,77 @@ int sdb_replace_many(struct SDB* sdb, const char* domain, const char* item, size
 
 
 /**
+ * Put attributes of several items to the database
+ * 
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param num the number of items
+ * @param items the array of items and their attributes
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_put_batch(struct SDB* sdb, const char* domain, size_t num, const struct sdb_item* items)
+{
+	size_t i, attrs;
+	int j;
+	char buf[64];
+	
+	attrs = 0;
+	for (i = 0; i < num; i++) {
+		attrs += items[i].size;
+	}
+	
+	SDB_COMMAND_PREPARE(8 + num + attrs * 2);
+	SDB_COMMAND_PARAM("DomainName", domain);
+	
+	for (i = 0; i < num; i++) {
+		sprintf(buf, "Item.%d.ItemName", i); SDB_COMMAND_PARAM(buf, items[i].name);
+		for (j = 0; j < items[i].size; j++) {
+			sprintf(buf, "Item.%d.Attribute.%d.Name"   , i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].name);
+			sprintf(buf, "Item.%d.Attribute.%d.Value"  , i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].value);
+		}
+	}
+	
+	SDB_COMMAND_EXECUTE("BatchPutAttributes");
+}
+
+
+/**
+ * Replace attributes of several items in the database
+ * 
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param num the number of items
+ * @param items the array of items and their attributes
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_replace_batch(struct SDB* sdb, const char* domain, size_t num, const struct sdb_item* items)
+{
+	size_t i, attrs;
+	int j;
+	char buf[64];
+	
+	attrs = 0;
+	for (i = 0; i < num; i++) {
+		attrs += items[i].size;
+	}
+	
+	SDB_COMMAND_PREPARE(8 + num + attrs * 3);
+	SDB_COMMAND_PARAM("DomainName", domain);
+	
+	for (i = 0; i < num; i++) {
+		sprintf(buf, "Item.%d.ItemName", i); SDB_COMMAND_PARAM(buf, items[i].name);
+		for (j = 0; j < items[i].size; j++) {
+			sprintf(buf, "Item.%d.Attribute.%d.Name"   , i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].name);
+			sprintf(buf, "Item.%d.Attribute.%d.Value"  , i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].value);
+			sprintf(buf, "Item.%d.Attribute.%d.Replace", i, j); SDB_COMMAND_PARAM(buf, "true");
+		}
+	}
+	
+	SDB_COMMAND_EXECUTE("BatchPutAttributes");
+}
+
+
+/**
  * Get an attribute
  * 
  * @param sdb the SimpleDB handle

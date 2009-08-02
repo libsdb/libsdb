@@ -543,6 +543,28 @@ int sdb_put_many(struct SDB* sdb, const char* domain, const char* item, size_t n
 int sdb_replace_many(struct SDB* sdb, const char* domain, const char* item, size_t num, const char** keys, const char** values);
 
 /**
+ * Put attributes of several items to the database
+ * 
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param num the number of items
+ * @param items the array of items and their attributes
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_put_batch(struct SDB* sdb, const char* domain, size_t num, const struct sdb_item* items);
+
+/**
+ * Replace attributes of several items in the database
+ * 
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param num the number of items
+ * @param items the array of items and their attributes
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_replace_batch(struct SDB* sdb, const char* domain, size_t num, const struct sdb_item* items);
+
+/**
  * Get an attribute
  * 
  * @param sdb the SimpleDB handle

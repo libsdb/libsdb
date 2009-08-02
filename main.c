@@ -226,6 +226,26 @@ int main(int argc, char** argv)
 			continue;
 		}
 		
+		if (strcmp(cmd, "w") == 0) {
+			printf("Batch Put Attributes\n");
+			struct sdb_attribute a[3];
+			a[0].name = "name";
+			a[0].value = "val:name";
+			a[1].name = "key";
+			a[1].value = "val:key";
+			a[2].name = "ver";
+			a[2].value = "val:ver";
+			struct sdb_item x[2];
+			x[0].name = "i1";
+			x[0].size = 2;
+			x[0].attributes = a;
+			x[1].name = "i2";
+			x[1].size = 3;
+			x[1].attributes = a;
+			COMMAND(sdb_put_batch(sdb, "test1", 2, x)); 
+			continue;
+		}
+		
 		if (strcmp(cmd, "x") == 0) {
 			struct sdb_multi_response* res;
 			int i, r;
