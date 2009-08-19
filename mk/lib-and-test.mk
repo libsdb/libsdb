@@ -55,7 +55,7 @@ vg-dev: all
 	@valgrind --tool=memcheck --leak-check=yes --num-callers=24 $(BUILD_DIR)/$(TEST_TARGET) $(RUN_DEV_ARGS)
 
 gdb: all
-	@gdb @$(BUILD_DIR)/$(TEST_TARGET)
+	@gdb $(BUILD_DIR)/$(TEST_TARGET)
 
 vg-all: all
 	@valgrind --tool=memcheck --leak-check=yes --num-callers=24 --show-reachable=yes $(BUILD_DIR)/$(TEST_TARGET)
