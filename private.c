@@ -101,6 +101,9 @@ const char* SDB_AWS_ERRORS[] = {
 CURL* sdb_create_curl(struct SDB* sdb)
 {
 	CURL* h = NULL;
+
+	// Avoid SSL context creation failures
+	SSL_library_init();
 	
 	// Create the handle
 	
@@ -602,8 +605,8 @@ char* sdb_url(struct SDB* sdb, struct sdb_params* params)
 	char* urlencoded;
 	if (SDB_FAILED(sdb_params_export(sdb, params, &urlencoded))) return NULL;
 	
-	char* url = (char*) malloc(strlen(urlencoded) + 64);
-	strcpy(url, "http://sdb.amazonaws.com/?");
+	char* url = (char*) malloc(strlen(urlencoded) + 65);
+	strcpy(url, "https://sdb.amazonaws.com/?");
 	strcat(url, urlencoded);
 	free(urlencoded);
 	
@@ -710,6 +713,9 @@ int sdb_execute(struct SDB* sdb, const char* cmd, struct sdb_params* _params)
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &sdb->rec);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
+#ifdef _DEBUG_PRINT_RESPONSE
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+#endif
 	CURLcode cr = curl_easy_perform(curl);
 	free(post);
 	
@@ -812,6 +818,9 @@ int sdb_execute_rs(struct SDB* sdb, const char* cmd, struct sdb_params* _params,
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &sdb->rec);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
+#ifdef _DEBUG_PRINT_RESPONSE
+	curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+#endif
 	CURLcode cr = curl_easy_perform(curl);
 	free(post);
 	
