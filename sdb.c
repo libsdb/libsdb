@@ -172,7 +172,7 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret)
 	
 	// Other initialization
 	
-	(*sdb)->sdb_signature_ver = 0;
+	(*sdb)->sdb_signature_ver = 2;
 	(*sdb)->sdb_signature_ver_str[0] = '0' + (*sdb)->sdb_signature_ver; 
 	(*sdb)->sdb_signature_ver_str[1] = '\0';
 	

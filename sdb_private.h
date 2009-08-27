@@ -475,6 +475,17 @@ long sdb_estimate_http_sent(struct SDB* sdb, long post_size);
  */ 
 long sdb_estimate_http_received(struct SDB* sdb, long response_size);
 
+/**
+ * Slight modification to curl_easy_escape, since it escapes a few characters
+ * that the SimpleDB API does not want escaped.
+ * 
+ * @param sdb the SimpleDB handle
+ * @param string the string to escape
+ * @param inlength the length of the inbound character string
+ * @return the escaped string
+ */
+char* sdb_escape(struct SDB* sdb, const char* string, int inlength);
+
 
 #ifdef __cplusplus
 }

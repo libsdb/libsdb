@@ -318,7 +318,7 @@ int sdb_sign(struct SDB* sdb, const char* str, char* buffer, size_t* plen)
 	char md[EVP_MAX_MD_SIZE];
 	size_t mdl;
 	
-	HMAC(EVP_sha1(), sdb->sdb_secret, sdb->sdb_secret_len, str, strlen(str), md, &mdl);
+	HMAC(EVP_sha256(), sdb->sdb_secret, sdb->sdb_secret_len, str, strlen(str), md, &mdl);
 	 
 	size_t l = base64(md, mdl, buffer, EVP_MAX_MD_SIZE * 2);
 	
@@ -423,7 +423,10 @@ int sdb_params_add_all(struct sdb_params* params, struct sdb_params* other)
  */
 int str_compare(const void* a, const void* b)
 {
-	return strcasecmp((const char*) a, (const char*) b);
+	//return strcasecmp((const char*) a, (const char*) b);
+	char const *pa = *(char const **)a, *pb = *(char const **)b;
+	return strnatcmp(pa, pb);
+
 }
 
 
@@ -453,27 +456,9 @@ int sdb_params_sign(struct SDB* sdb, struct sdb_params* params, char* buffer, si
 {
 	assert(params->size >= 2);
 	
+	// Signature version 2
 	
-	// Signature version 0
-	
-	if (sdb->sdb_signature_ver == 0) {
-	
-		assert(strcmp(params->params[0].key, "Action") == 0);
-		assert(strcmp(params->params[1].key, "Timestamp") == 0);
-		
-		size_t l = strlen(params->params[0].value) + strlen(params->params[1].value) + 4;
-		char* b = (char*) alloca(l);
-		
-		strcpy(b, params->params[0].value);
-		strcat(b, params->params[1].value);
-		
-		return sdb_sign(sdb, b, buffer, plen); 
-	}
-	
-	
-	// Signature version 1
-	
-	if (sdb->sdb_signature_ver == 1) {
+	if (sdb->sdb_signature_ver == 2) {
 		
 		SDB_SAFE(sdb_params_sort(params));
 		
@@ -481,23 +466,125 @@ int sdb_params_sign(struct SDB* sdb, struct sdb_params* params, char* buffer, si
 		for (i = 0; i < params->size; i++) {
 			l += strlen(params->params[i].key);
 			l += strlen(params->params[i].value);
+			l += 2;
 		}
+		
+		// for additional sig v2 data
+		l += 25;
 		
 		char* b = (char*) alloca(l);
 		*b = '\0';
 		
-		for (i = 0; i < params->size; i++) {
-			strcat(b, params->params[i].key);
-			strcat(b, params->params[i].value);
-		}
+		strcat(b, "POST\n");
+		strcat(b, "sdb.amazonaws.com\n");
+		strcat(b, "/\n");
 		
+		for (i = 0; i < params->size; i++) {
+			if (i > 0) strcat(b, "&");
+
+			strcat(b, params->params[i].key);
+			strcat(b, "=");
+			
+			char* e = sdb_escape(sdb, params->params[i].value, strlen(params->params[i].value));
+			if (e == NULL) {
+				free(b);
+				return SDB_E_URL_ENCODE_FAILED;
+			}
+			strcat(b, e);
+			
+			curl_free(e);
+		}
+
 		return sdb_sign(sdb, b, buffer, plen); 
 	}
-	
 	
 	return SDB_E_INVALID_SIGNATURE_VER;
 }
 
+
+
+/**
+ * Slight modification to curl_easy_escape, since it escapes a few characters
+ * that the SimpleDB API does not want escaped.
+ * 
+ * @param sdb the SimpleDB handle
+ * @param string the string to escape
+ * @param inlength the length of the inbound character string
+ * @return the escaped string
+ */
+char *sdb_escape(struct SDB* sdb, const char *string, int inlength)
+{
+	size_t alloc = (inlength?(size_t)inlength:strlen(string))+1;
+	char *ns;
+	char *testing_ptr = NULL;
+	unsigned char in; /* we need to treat the characters unsigned */
+	size_t newlen = alloc;
+	int strindex=0;
+	size_t length;
+	
+	ns = malloc(alloc);
+	if(!ns)
+		return NULL;
+	
+	length = alloc-1;
+	while(length--) {
+		in = *string;
+
+		/* Portable character check (remember EBCDIC). Do not use isalnum() because
+		its behavior is altered by the current locale. */
+
+    	switch (in) {
+			case '0': case '1': case '2': case '3': case '4':
+			case '5': case '6': case '7': case '8': case '9':
+			case 'a': case 'b': case 'c': case 'd': case 'e':
+			case 'f': case 'g': case 'h': case 'i': case 'j':
+			case 'k': case 'l': case 'm': case 'n': case 'o':
+			case 'p': case 'q': case 'r': case 's': case 't':
+			case 'u': case 'v': case 'w': case 'x': case 'y': case 'z':
+			case 'A': case 'B': case 'C': case 'D': case 'E':
+			case 'F': case 'G': case 'H': case 'I': case 'J':
+			case 'K': case 'L': case 'M': case 'N': case 'O':
+			case 'P': case 'Q': case 'R': case 'S': case 'T':
+			case 'U': case 'V': case 'W': case 'X': case 'Y': case 'Z':
+			case '~': case '_': case '-': case '.':
+				/* just copy this */
+				ns[strindex++]=in;
+				break;
+			default:
+				/* encode it */
+				newlen += 2; /* the size grows with two, since this'll become a %XX */
+				if(newlen > alloc) {
+					alloc *= 2;
+					testing_ptr = realloc(ns, alloc);
+					if(!testing_ptr) {
+						free( ns );
+						return NULL;
+					}
+					else {
+						ns = testing_ptr;
+					}
+				}
+
+#ifdef CURL_DOES_CONVERSIONS
+/* escape sequences are always in ASCII so convert them on non-ASCII hosts */
+				if(!sdb->curl_handle ||
+				(Curl_convert_to_network(sdb->curl_handle, &in, 1) != CURLE_OK)) {
+				/* Curl_convert_to_network calls failf if unsuccessful */
+					free(ns);
+					return NULL;
+				}
+#endif /* CURL_DOES_CONVERSIONS */
+		
+				snprintf(&ns[strindex], 4, "%%%02X", in);
+		
+				strindex+=3;
+				break;
+		}
+		string++;
+	}
+	ns[strindex]=0; /* terminate it */
+	return ns;
+}
 
 /**
  * Create the URL-encoded parameters string
@@ -541,7 +628,7 @@ int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer
 		strcat(b, params->params[i].key);
 		strcat(b, "=");
 		
-		char* e = curl_easy_escape(sdb->curl_handle, params->params[i].value, strlen(params->params[i].value));
+		char* e = sdb_escape(sdb->curl_handle, params->params[i].value, strlen(params->params[i].value));
 		if (e == NULL) {
 			free(b);
 			*pbuffer = NULL;
@@ -567,7 +654,8 @@ int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer
 int sdb_params_add_required(struct SDB* sdb, struct sdb_params* params)
 {
 	SDB_SAFE(sdb_params_add(params, "SignatureVersion", sdb->sdb_signature_ver_str));
-	SDB_SAFE(sdb_params_add(params, "Version", "2007-11-07"));
+	SDB_SAFE(sdb_params_add(params, "Version", "2009-04-15"));
+	SDB_SAFE(sdb_params_add(params, "SignatureMethod", "HmacSHA256"));
 	SDB_SAFE(sdb_params_add(params, "AWSAccessKeyId", sdb->sdb_key));
 	
 	return SDB_OK;
@@ -590,27 +678,6 @@ struct sdb_params* sdb_params_deep_copy(struct sdb_params* params)
 	for (i = 0; i < params->size; i++) sdb_params_add(p, params->params[i].key, params->params[i].value);
 	
 	return p;
-}
-
-
-/**
- * Create the command URL
- * 
- * @param sdb the SimpleDB handle
- * @param params the parameter array
- * @return the URL, or NULL on error
- */
-char* sdb_url(struct SDB* sdb, struct sdb_params* params)
-{
-	char* urlencoded;
-	if (SDB_FAILED(sdb_params_export(sdb, params, &urlencoded))) return NULL;
-	
-	char* url = (char*) malloc(strlen(urlencoded) + 65);
-	strcpy(url, "https://sdb.amazonaws.com/?");
-	strcat(url, urlencoded);
-	free(urlencoded);
-	
-	return url;
 }
 
 

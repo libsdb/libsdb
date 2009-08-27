@@ -36,7 +36,7 @@
 # Source files
 #
 
-SOURCES := sdb.c util.c response.c private.c base64.c
+SOURCES := sdb.c util.c response.c private.c base64.c strnatcmp.c
 
 TEST_SOURCES := main.c
 
