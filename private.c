@@ -616,9 +616,22 @@ int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer
 int sdb_params_add_required(struct SDB* sdb, struct sdb_params* params)
 {
 	SDB_SAFE(sdb_params_add(params, "SignatureVersion", sdb->sdb_signature_ver_str));
-	SDB_SAFE(sdb_params_add(params, "Version", "2009-04-15"));
 	SDB_SAFE(sdb_params_add(params, "SignatureMethod", "HmacSHA256"));
 	SDB_SAFE(sdb_params_add(params, "AWSAccessKeyId", sdb->sdb_key));
+	
+	// Version 2007-11-07 deprecated Aug 24, 2010 
+	size_t i = 0;
+	for (i = 0; i < params->size; i++) {
+		if (strcmp(params->params[i].key, "Action") == 0) {
+			if (strcmp(params->params[i].value, "Query") == 0 ||
+			strcmp(params->params[i].value, "QueryWithAttributes") == 0) {
+				SDB_SAFE(sdb_params_add(params, "Version", "2007-11-07"));
+			} else {
+				SDB_SAFE(sdb_params_add(params, "Version", "2009-04-15"));
+			}
+			break;
+		}
+	}
 	
 	return SDB_OK;
 }
