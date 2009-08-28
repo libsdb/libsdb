@@ -442,67 +442,6 @@ int sdb_params_sort(struct sdb_params* params)
 	return SDB_OK;
 }
 
-
-/**
- * Sign the parameters
- * 
- * @param sdb the SimpleDB handle
- * @param params the parameter array
- * @param buffer the buffer to write the signature to (must be at least EVP_MAX_MD_SIZE * 2 bytes)
- * @param plen the pointer to the place to store the length of the signature (can be NULL)
- * @return SDB_OK if no errors occurred
- */
-int sdb_params_sign(struct SDB* sdb, struct sdb_params* params, char* buffer, size_t* plen)
-{
-	assert(params->size >= 2);
-	
-	// Signature version 2
-	
-	if (sdb->sdb_signature_ver == 2) {
-		
-		SDB_SAFE(sdb_params_sort(params));
-		
-		size_t i, l = 0;
-		for (i = 0; i < params->size; i++) {
-			l += strlen(params->params[i].key);
-			l += strlen(params->params[i].value);
-			l += 2;
-		}
-		
-		// for additional sig v2 data
-		l += 25;
-		
-		char* b = (char*) alloca(l);
-		*b = '\0';
-		
-		strcat(b, "POST\n");
-		strcat(b, "sdb.amazonaws.com\n");
-		strcat(b, "/\n");
-		
-		for (i = 0; i < params->size; i++) {
-			if (i > 0) strcat(b, "&");
-
-			strcat(b, params->params[i].key);
-			strcat(b, "=");
-			
-			char* e = sdb_escape(sdb, params->params[i].value, strlen(params->params[i].value));
-			if (e == NULL) {
-				free(b);
-				return SDB_E_URL_ENCODE_FAILED;
-			}
-			strcat(b, e);
-			
-			curl_free(e);
-		}
-
-		return sdb_sign(sdb, b, buffer, plen); 
-	}
-	
-	return SDB_E_INVALID_SIGNATURE_VER;
-}
-
-
-
 /**
  * Slight modification to curl_easy_escape, since it escapes a few characters
  * that the SimpleDB API does not want escaped.
@@ -587,7 +526,7 @@ char *sdb_escape(struct SDB* sdb, const char *string, int inlength)
 }
 
 /**
- * Create the URL-encoded parameters string
+ * Create the URL-encoded parameters string with SignatureVersion 2 sig.
  * 
  * @param sdb the SimpleDB handle
  * @param params the parameter array
@@ -596,12 +535,11 @@ char *sdb_escape(struct SDB* sdb, const char *string, int inlength)
  */
 int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer)
 {
+	assert(params->size >= 2);
+	
 	// Sign the parameters
 	
 	char signature[EVP_MAX_MD_SIZE * 2];
-	SDB_SAFE(sdb_params_sign(sdb, params, signature, NULL));
-	SDB_SAFE(sdb_params_add(params, "Signature", signature));
-	
 	
 	// Determine the appropriate size
 	
@@ -611,16 +549,15 @@ int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer
 		l += strlen(params->params[i].value) * 3 + 1;
 	}
 	
-	
 	// Allocate buffer
 	
 	*pbuffer = (char*) malloc(l + 4);
 	char* b = *pbuffer;
 	*b = '\0';
 	
-	
 	// Build the string
 	
+	SDB_SAFE(sdb_params_sort(params));
 	for (i = 0; i < params->size; i++) {
 	
 		if (i > 0) strcat(b, "&");
@@ -636,10 +573,33 @@ int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer
 		} 
 		
 		strcat(b, e);
-		
 		curl_free(e);
 	}
 	
+	// string is built, now build complete string to sign
+	
+	l = strlen(b) + 25;
+	char* s = (char*) alloca(l);
+	*s = '\0';
+	
+	strcat(s, "POST\n");
+	strcat(s, "sdb.amazonaws.com\n");
+	strcat(s, "/\n");
+	strcat(s, b);
+	
+	// Create the signature and add it to the URL-encoded param string
+	
+	SDB_SAFE(sdb_sign(sdb, s, signature, NULL));
+	
+	strcat(b, "&Signature=");
+	char* e = sdb_escape(sdb->curl_handle, signature, strlen(signature));
+	if (e == NULL) {
+		free(b);
+		*pbuffer = NULL;
+		return SDB_E_URL_ENCODE_FAILED;
+	}
+	strcat(b, e);
+	curl_free(e);
 	
 	return SDB_OK;
 }

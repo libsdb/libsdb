@@ -312,17 +312,6 @@ int sdb_params_add_all(struct sdb_params* params, struct sdb_params* other);
 int sdb_params_sort(struct sdb_params* params);
 
 /**
- * Sign the parameters
- * 
- * @param sdb the SimpleDB handle
- * @param params the parameter array
- * @param buffer the buffer to write the signature to (must be at least EVP_MAX_MD_SIZE * 2 bytes)
- * @param plen the pointer to the place to store the length of the signature (can be NULL)
- * @return SDB_OK if no errors occurred
- */
-int sdb_params_sign(struct SDB* sdb, struct sdb_params* params, char* buffer, size_t* plen);
-
-/**
  * Create the URL-encoded parameters string
  * 
  * @param sdb the SimpleDB handle
