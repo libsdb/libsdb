@@ -86,7 +86,7 @@ size_t base64(const unsigned char *input, size_t length, char* output, size_t ol
 	
 #else
 	
-	return encode64(input, output, length);
+	return encode64((const char*) input, output, length);
 	
 #endif
 }

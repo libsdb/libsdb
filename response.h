@@ -32,6 +32,9 @@
  * SUCH DAMAGE.
  */
 
+#ifndef __SDB_RESPONSE_H
+#define __SDB_RESPONSE_H
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -215,4 +218,6 @@ int sdb_response_parse_items(struct sdb_response* response, xmlNodePtr items);
 
 #ifdef __cplusplus
 }
+#endif
+
 #endif

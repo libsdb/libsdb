@@ -77,7 +77,7 @@ void encodeblock(const unsigned char* in, unsigned char* out, int len)
 int encode64(const char* input, char* output, int length)
 {
 	unsigned char in[3];
-	int i, j, len, bytes = 0;
+	int i, j, bytes = 0;
 	
 	for (j = 0; j < length; j += 3) {
 	
@@ -87,7 +87,7 @@ int encode64(const char* input, char* output, int length)
 		for (i = len; i < 3; i++) in[i] = 0; 
 		
 		if (len > 0) {
-			encodeblock(in, output + bytes, len);
+			encodeblock(in, (unsigned char*) output + bytes, len);
 			bytes += 4;
 		}
 	}

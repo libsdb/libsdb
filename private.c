@@ -35,10 +35,12 @@
 #include "stdafx.h"
 #include "sdb.h"
 #include "sdb_private.h"
+#include "strnatcmp.h"
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include <openssl/ssl.h>
 #include <openssl/sha.h>
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
@@ -315,10 +317,10 @@ int sdb_timestamp(char* buffer)
  */
 int sdb_sign(struct SDB* sdb, const char* str, char* buffer, size_t* plen)
 {
-	char md[EVP_MAX_MD_SIZE];
+	unsigned char md[EVP_MAX_MD_SIZE];
 	size_t mdl;
 	
-	HMAC(EVP_sha256(), sdb->sdb_secret, sdb->sdb_secret_len, str, strlen(str), md, &mdl);
+	HMAC(EVP_sha256(), sdb->sdb_secret, sdb->sdb_secret_len, (const unsigned char*) str, strlen(str), md, &mdl);
 	 
 	size_t l = base64(md, mdl, buffer, EVP_MAX_MD_SIZE * 2);
 	
@@ -565,7 +567,7 @@ int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer
 		strcat(b, params->params[i].key);
 		strcat(b, "=");
 		
-		char* e = sdb_escape(sdb->curl_handle, params->params[i].value, strlen(params->params[i].value));
+		char* e = sdb_escape(sdb, params->params[i].value, strlen(params->params[i].value));
 		if (e == NULL) {
 			free(b);
 			*pbuffer = NULL;
@@ -599,7 +601,7 @@ int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer
 		return SDB_E_URL_ENCODE_FAILED;
 	}
 	strcat(b, e);
-	curl_free(e);
+	free(e);
 	
 	return SDB_OK;
 }
@@ -823,7 +825,7 @@ int sdb_execute_rs(struct SDB* sdb, const char* cmd, struct sdb_params* _params,
 	if (*response != NULL) {
 		if ((*response)->has_more) {
 			assert((*response)->internal->next_token);
-			SDB_SAFE(sdb_params_add(params, "NextToken", (*response)->internal->next_token));
+			SDB_SAFE(sdb_params_add(params, "NextToken", (const char*) (*response)->internal->next_token));
 		}
 	}
 	

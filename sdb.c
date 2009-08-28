@@ -370,7 +370,7 @@ void sdb_fprint_statistics(struct SDB* sdb, FILE* f)
 	fprintf(f, "Total number of PutAttributes commands : %lld\n", s->num_puts);
 	fprintf(f, "Total number of commands sent          : %lld\n", s->num_commands);
 	fprintf(f, "Total number of retries                : %lld\n", s->num_retries);
-	fprintf(f, "Total box usage                        : %llf\n", s->box_usage);
+	fprintf(f, "Total box usage                        : %lf\n" , (double) s->box_usage);
 }
 
 
@@ -519,10 +519,10 @@ int sdb_next(struct SDB* sdb, struct sdb_response** response, int append)
 		
 		// Copy the NEXT token and the command
 		
-		char* next = (char*) malloc(strlen((*response)->internal->next_token) + 4);
-		strcpy(next, (*response)->internal->next_token);
+		char* next = (char*) malloc(strlen((char*) (*response)->internal->next_token) + 4);
+		strcpy(next, (char*) (*response)->internal->next_token);
 		
-		char* command = (char*) malloc(strlen((*response)->internal->command) + 4);
+		char* command = (char*) malloc(strlen((char*) (*response)->internal->command) + 4);
 		strcpy(command, (*response)->internal->command);
 		
 		
@@ -537,7 +537,7 @@ int sdb_next(struct SDB* sdb, struct sdb_response** response, int append)
 		sdb_response_init(*response);
 		
 		(*response)->has_more = TRUE;
-		(*response)->internal->next_token = next;
+		(*response)->internal->next_token = (unsigned char*) next;
 		(*response)->internal->command = command;
 		(*response)->internal->params = params;
 		
@@ -1140,7 +1140,7 @@ int sdb_multi_run(struct SDB* sdb, struct sdb_multi_response** response)
 		int num_retry_cmds = 0;
 		for (R = retry_list; R != NULL; R = R->next) {
 			struct sdb_response** pres = (struct sdb_response**) R->user_data;
-			char* next_token = *pres == NULL ? NULL : (*pres)->internal->next_token;
+			char* next_token = *pres == NULL ? NULL : (char*) (*pres)->internal->next_token;
 			if (sdb_execute_multi(sdb, R->command, R->params, next_token, R->user_data, R->user_data_2) == SDB_MULTI_ERROR) {
 				sdb_multi_free_chain(sdb, sdb->multi);
 				sdb_retry_destroy_chain(retry_list);

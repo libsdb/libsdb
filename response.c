@@ -36,6 +36,7 @@
 #include "response.h"
 
 #include "sdb.h"
+#include "sdb_private.h"
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -80,6 +81,7 @@ struct sdb_response_internal* sdb_response_internal_allocate(void)
 	r->command = NULL;
 	r->to_free = NULL;
 	r->empty_string[0] = '\0';
+	return r;
 }
 
 
@@ -263,7 +265,7 @@ int sdb_response_parse(struct sdb_response* response, const char* buffer, size_t
 		
 		// Error node
 		
-		if (strcmp(cur->name, "Errors") == 0) {
+		if (strcmp((char*) cur->name, "Errors") == 0) {
 			SDB_SAFE(sdb_response_parse_errors(response, cur));
 			continue;
 		}
@@ -271,7 +273,7 @@ int sdb_response_parse(struct sdb_response* response, const char* buffer, size_t
 		
 		// Response metadata
 		
-		if (strcmp(cur->name, "ResponseMetadata") == 0) {
+		if (strcmp((char*) cur->name, "ResponseMetadata") == 0) {
 			SDB_SAFE(sdb_response_parse_metadata(response, cur));
 			continue;
 		}
@@ -279,7 +281,7 @@ int sdb_response_parse(struct sdb_response* response, const char* buffer, size_t
 		
 		// List domains result
 		
-		if (strcmp(cur->name, "ListDomainsResult") == 0) {
+		if (strcmp((char*) cur->name, "ListDomainsResult") == 0) {
 			SDB_SAFE(sdb_response_parse_domains(response, cur));
 			continue;
 		}
@@ -287,7 +289,7 @@ int sdb_response_parse(struct sdb_response* response, const char* buffer, size_t
 		
 		// Domain metadata result
 		
-		if (strcmp(cur->name, "DomainMetadataResult") == 0) {
+		if (strcmp((char*) cur->name, "DomainMetadataResult") == 0) {
 			SDB_SAFE(sdb_response_parse_domain_metadata(response, cur));
 			continue;
 		}
@@ -295,7 +297,7 @@ int sdb_response_parse(struct sdb_response* response, const char* buffer, size_t
 		
 		// Get attributes result
 		
-		if (strcmp(cur->name, "GetAttributesResult") == 0) {
+		if (strcmp((char*) cur->name, "GetAttributesResult") == 0) {
 			SDB_SAFE(sdb_response_parse_attributes(response, cur));
 			continue;
 		}
@@ -303,7 +305,7 @@ int sdb_response_parse(struct sdb_response* response, const char* buffer, size_t
 		
 		// Get the items with attributes result
 		
-		if (strcmp(cur->name, "QueryResult") == 0 || strcmp(cur->name, "QueryWithAttributesResult") == 0 || strcmp(cur->name, "SelectResult") == 0) {
+		if (strcmp((char*) cur->name, "QueryResult") == 0 || strcmp((char*) cur->name, "QueryWithAttributesResult") == 0 || strcmp((char*) cur->name, "SelectResult") == 0) {
 			SDB_SAFE(sdb_response_parse_items(response, cur));
 			continue;
 		}
@@ -311,8 +313,8 @@ int sdb_response_parse(struct sdb_response* response, const char* buffer, size_t
 		
 		// The list of response nodes to ignore
 		
-		if (strcmp(cur->name, "RequestID") == 0) continue;
-		if (strcmp(cur->name, "RequestId") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestID") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestId") == 0) continue;
 		
 		
 		// Deal with errors here
@@ -338,26 +340,28 @@ int sdb_response_parse(struct sdb_response* response, const char* buffer, size_t
 int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 {
 	xmlNodePtr topcur, cur, content; int i;
+	char* str_content;
 	for (topcur = errors->children; topcur != NULL; topcur = topcur->next) {
 		
 		
 		// Handle an error node
 		
-		if (strcmp(topcur->name, "Error") == 0) {
+		if (strcmp((char*) topcur->name, "Error") == 0) {
 			response->num_errors++;
 			
 			for (cur = topcur->children; cur != NULL; cur = cur->next) {
 				
 				// Parse the error code
 				
-				if (strcmp(cur->name, "Code") == 0) {
+				if (strcmp((char*) cur->name, "Code") == 0) {
 					assert(cur->children != NULL);
 					content = cur->children;
 					assert(XML_GET_CONTENT(content) != NULL);
 					
 					if (response->error == 0) {
+						str_content = (char*) XML_GET_CONTENT(content);
 						for (i = 0; i < SDB_AWS_NUM_ERRORS; i++) {
-							if (strcmp(SDB_AWS_ERRORS[i], XML_GET_CONTENT(content)) == 0) {
+							if (strcmp(SDB_AWS_ERRORS[i], str_content) == 0) {
 								response->error = i;
 							}
 						}
@@ -365,7 +369,7 @@ int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 						if (response->error == 0) {
 							response->error = SDB_AWS_NUM_ERRORS;
 							if (response->internal->errout != NULL) {
-								fprintf(response->internal->errout, "SimpleDB ERROR: Unknown error code \"%s\"\n", XML_GET_CONTENT(content));
+								fprintf(response->internal->errout, "SimpleDB ERROR: Unknown error code \"%s\"\n", str_content);
 							}
 						}
 					}
@@ -376,12 +380,12 @@ int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 				
 				// Parse the error message
 				
-				if (strcmp(cur->name, "Message") == 0) {
+				if (strcmp((char*) cur->name, "Message") == 0) {
 					assert(cur->children != NULL);
 					content = cur->children;
 					assert(XML_GET_CONTENT(content) != NULL);
 					
-					if (response->error_message == NULL) response->error_message = XML_GET_CONTENT(content);
+					if (response->error_message == NULL) response->error_message = (char*) XML_GET_CONTENT(content);
 					
 					if (response->internal->errout != NULL) {
 						fprintf(response->internal->errout, "SimpleDB ERROR: %s\n", XML_GET_CONTENT(content));
@@ -392,7 +396,7 @@ int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 				
 				// The list of nodes to ignore
 				
-				if (strcmp(cur->name, "BoxUsage") == 0) continue;
+				if (strcmp((char*) cur->name, "BoxUsage") == 0) continue;
 				
 				
 				// Invalid Amazon response
@@ -409,7 +413,7 @@ int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 		
 		// The list of nodes to ignore
 		
-		if (strcmp(cur->name, "BoxUsage") == 0) continue;
+		if (strcmp((char*) topcur->name, "BoxUsage") == 0) continue;
 		
 				
 		// Handle errors
@@ -439,13 +443,14 @@ int sdb_response_parse_metadata(struct sdb_response* response, xmlNodePtr metada
 		
 		// The box usage statistic
 		
-		if (strcmp(cur->name, "BoxUsage") == 0) {
+		if (strcmp((char*) cur->name, "BoxUsage") == 0) {
 			assert(cur->children != NULL);
 			content = cur->children;
 			assert(XML_GET_CONTENT(content) != NULL);
 			
 			char* e = NULL;
-			response->box_usage = strtod(XML_GET_CONTENT(content), &e);
+			char* str_content = (char*) XML_GET_CONTENT(content);
+			response->box_usage = strtod(str_content, &e);
 			if (response->box_usage < 0 || e == NULL || *e != '\0') {
 				response->box_usage = 0;
 				if (response->internal->errout != NULL) {
@@ -459,8 +464,8 @@ int sdb_response_parse_metadata(struct sdb_response* response, xmlNodePtr metada
 		
 		// The list of nodes to ignore
 		
-		if (strcmp(cur->name, "RequestID") == 0) continue;
-		if (strcmp(cur->name, "RequestId") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestID") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestId") == 0) continue;
 		
 		
 		// Handle errors
@@ -497,7 +502,7 @@ int sdb_response_parse_domains(struct sdb_response* response, xmlNodePtr domains
 		
 		// The domain name
 		
-		if (strcmp(cur->name, "DomainName") == 0) {
+		if (strcmp((char*) cur->name, "DomainName") == 0) {
 			size++;
 			continue;
 		}
@@ -505,7 +510,7 @@ int sdb_response_parse_domains(struct sdb_response* response, xmlNodePtr domains
 		
 		// The next token
 		
-		if (strcmp(cur->name, "NextToken") == 0) {
+		if (strcmp((char*) cur->name, "NextToken") == 0) {
 			assert(cur->children != NULL);
 			content = cur->children;
 			response->internal->next_token = XML_GET_CONTENT(content); 
@@ -517,8 +522,8 @@ int sdb_response_parse_domains(struct sdb_response* response, xmlNodePtr domains
 		
 		// The list of nodes to ignore
 		
-		if (strcmp(cur->name, "RequestID") == 0) continue;
-		if (strcmp(cur->name, "RequestId") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestID") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestId") == 0) continue;
 		
 		
 		// Handle errors
@@ -564,11 +569,11 @@ int sdb_response_parse_domains(struct sdb_response* response, xmlNodePtr domains
 		
 		// The domain name
 		
-		if (strcmp(cur->name, "DomainName") == 0) {
+		if (strcmp((char*) cur->name, "DomainName") == 0) {
 			assert(cur->children != NULL);
 			content = cur->children;
 			assert(XML_GET_CONTENT(content) != NULL);
-			response->domains[index++] = XML_GET_CONTENT(content); 
+			response->domains[index++] = (char*) XML_GET_CONTENT(content); 
 		}
 	}
 	
@@ -585,7 +590,8 @@ int sdb_response_parse_domains(struct sdb_response* response, xmlNodePtr domains
 		assert(XML_GET_CONTENT(content) != NULL);														\
 																										\
 		char* e = NULL;																					\
-		response->variable = strtol(XML_GET_CONTENT(content), &e, 10);									\
+		char* str_content = (char*) XML_GET_CONTENT(content);											\
+		response->variable = strtol(str_content, &e, 10);												\
 		if (e == NULL || *e != '\0') {																	\
 			if (!(e[0] == '.' && e[1] == '0' && e[2] == '\0')) { 										\
 				response->variable = 0;																	\
@@ -623,19 +629,19 @@ int sdb_response_parse_domain_metadata(struct sdb_response* response, xmlNodePtr
 		
 		// The metadata
 		
-		if (strcmp(cur->name, "Timestamp") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->timestamp);
-		if (strcmp(cur->name, "ItemCount") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->item_count);
-		if (strcmp(cur->name, "AttributeValueCount") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->attr_value_count);
-		if (strcmp(cur->name, "AttributeNameCount") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->attr_name_count);
-		if (strcmp(cur->name, "ItemNamesSizeBytes") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->item_names_size);
-		if (strcmp(cur->name, "AttributeValuesSizeBytes") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->attr_values_size);
-		if (strcmp(cur->name, "AttributeNamesSizeBytes") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->attr_names_size);
+		if (strcmp((char*) cur->name, "Timestamp") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->timestamp);
+		if (strcmp((char*) cur->name, "ItemCount") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->item_count);
+		if (strcmp((char*) cur->name, "AttributeValueCount") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->attr_value_count);
+		if (strcmp((char*) cur->name, "AttributeNameCount") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->attr_name_count);
+		if (strcmp((char*) cur->name, "ItemNamesSizeBytes") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->item_names_size);
+		if (strcmp((char*) cur->name, "AttributeValuesSizeBytes") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->attr_values_size);
+		if (strcmp((char*) cur->name, "AttributeNamesSizeBytes") == 0) SDB_RESPONSE_GET_LONG(domain_metadata->attr_names_size);
 		
 		
 		// The list of nodes to ignore
 		
-		if (strcmp(cur->name, "RequestID") == 0) continue;
-		if (strcmp(cur->name, "RequestId") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestID") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestId") == 0) continue;
 		
 		
 		// Handle errors
@@ -672,7 +678,7 @@ int sdb_response_parse_attributes(struct sdb_response* response, xmlNodePtr attr
 		
 		// The attribute
 		
-		if (strcmp(cur->name, "Attribute") == 0) {
+		if (strcmp((char*) cur->name, "Attribute") == 0) {
 			size++;
 			continue;
 		}
@@ -680,7 +686,7 @@ int sdb_response_parse_attributes(struct sdb_response* response, xmlNodePtr attr
 		
 		// The next token
 		
-		if (strcmp(cur->name, "NextToken") == 0) {
+		if (strcmp((char*) cur->name, "NextToken") == 0) {
 			assert(cur->children != NULL);
 			content = cur->children;
 			response->internal->next_token = XML_GET_CONTENT(content); 
@@ -692,8 +698,8 @@ int sdb_response_parse_attributes(struct sdb_response* response, xmlNodePtr attr
 		
 		// The list of nodes to ignore
 		
-		if (strcmp(cur->name, "RequestID") == 0) continue;
-		if (strcmp(cur->name, "RequestId") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestID") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestId") == 0) continue;
 		
 		
 		// Handle errors
@@ -739,21 +745,21 @@ int sdb_response_parse_attributes(struct sdb_response* response, xmlNodePtr attr
 		
 		// The attribute name
 		
-		if (strcmp(cur->name, "Attribute") == 0) {
+		if (strcmp((char*) cur->name, "Attribute") == 0) {
 			struct sdb_attribute* a = &(response->attributes[index++]);
 			a->name = a->value = NULL;
 			
 			for (cur2 = cur->children; cur2 != NULL; cur2 = cur2->next) {
 				
-				if (strcmp(cur2->name, "Name") == 0) { 
+				if (strcmp((char*) cur2->name, "Name") == 0) { 
 					assert(cur2->children != NULL);
 					content = cur2->children;
 					assert(XML_GET_CONTENT(content) != NULL);
-					a->name = XML_GET_CONTENT(content);
+					a->name = (char*) XML_GET_CONTENT(content);
 					continue;
 				} 
 				
-				if (strcmp(cur2->name, "Value") == 0) { 
+				if (strcmp((char*) cur2->name, "Value") == 0) { 
 					if (cur2->children == NULL) {
 						a->value = response->internal->empty_string;
 						continue;
@@ -761,7 +767,7 @@ int sdb_response_parse_attributes(struct sdb_response* response, xmlNodePtr attr
 					else {
 						content = cur2->children;
 						assert(XML_GET_CONTENT(content) != NULL);
-						a->value = XML_GET_CONTENT(content);
+						a->value = (char*) XML_GET_CONTENT(content);
 						continue;
 					}
 				} 
@@ -814,7 +820,7 @@ int sdb_response_parse_item(struct sdb_response* response, struct sdb_item* item
 		
 		// The attribute
 		
-		if (strcmp(cur->name, "Attribute") == 0) {
+		if (strcmp((char*) cur->name, "Attribute") == 0) {
 			size++;
 			continue;
 		}
@@ -822,7 +828,7 @@ int sdb_response_parse_item(struct sdb_response* response, struct sdb_item* item
 		
 		// The item name
 		
-		if (strcmp(cur->name, "Name") == 0) continue;
+		if (strcmp((char*) cur->name, "Name") == 0) continue;
 		
 		
 		// Handle errors
@@ -847,32 +853,32 @@ int sdb_response_parse_item(struct sdb_response* response, struct sdb_item* item
 		
 		// The item name
 		
-		if (strcmp(cur->name, "Name") == 0) { 
+		if (strcmp((char*) cur->name, "Name") == 0) { 
 			assert(cur->children != NULL);
 			content = cur->children;
 			assert(XML_GET_CONTENT(content) != NULL);
-			item->name = XML_GET_CONTENT(content);
+			item->name = (char*) XML_GET_CONTENT(content);
 			continue;
 		} 
 		
 		
 		// The attribute
 		
-		if (strcmp(cur->name, "Attribute") == 0) {
+		if (strcmp((char*) cur->name, "Attribute") == 0) {
 			struct sdb_attribute* a = &(item->attributes[index++]);
 			a->name = a->value = NULL;
 			
 			for (cur2 = cur->children; cur2 != NULL; cur2 = cur2->next) {
 				
-				if (strcmp(cur2->name, "Name") == 0) { 
+				if (strcmp((char*) cur2->name, "Name") == 0) { 
 					assert(cur2->children != NULL);
 					content = cur2->children;
 					assert(XML_GET_CONTENT(content) != NULL);
-					a->name = XML_GET_CONTENT(content);
+					a->name = (char*) XML_GET_CONTENT(content);
 					continue;
 				} 
 				
-				if (strcmp(cur2->name, "Value") == 0) { 
+				if (strcmp((char*) cur2->name, "Value") == 0) { 
 					if (cur2->children == NULL) {
 						a->value = response->internal->empty_string;
 						continue;
@@ -880,7 +886,7 @@ int sdb_response_parse_item(struct sdb_response* response, struct sdb_item* item
 					else {
 						content = cur2->children;
 						assert(XML_GET_CONTENT(content) != NULL);
-						a->value = XML_GET_CONTENT(content);
+						a->value = (char*) XML_GET_CONTENT(content);
 						continue;
 					}
 				} 
@@ -916,7 +922,7 @@ int sdb_response_parse_item(struct sdb_response* response, struct sdb_item* item
  */
 int sdb_response_parse_items(struct sdb_response* response, xmlNodePtr items)
 {
-	xmlNodePtr cur, cur2, content;
+	xmlNodePtr cur, content;
 	int size = 0;
 	
 	
@@ -929,7 +935,7 @@ int sdb_response_parse_items(struct sdb_response* response, xmlNodePtr items)
 		
 		// The item
 		
-		if (strcmp(cur->name, "Item") == 0 || strcmp(cur->name, "ItemName") == 0) {
+		if (strcmp((char*) cur->name, "Item") == 0 || strcmp((char*) cur->name, "ItemName") == 0) {
 			size++;
 			continue;
 		}
@@ -937,7 +943,7 @@ int sdb_response_parse_items(struct sdb_response* response, xmlNodePtr items)
 		
 		// The next token
 		
-		if (strcmp(cur->name, "NextToken") == 0) {
+		if (strcmp((char*) cur->name, "NextToken") == 0) {
 			assert(cur->children != NULL);
 			content = cur->children;
 			response->internal->next_token = XML_GET_CONTENT(content); 
@@ -949,8 +955,8 @@ int sdb_response_parse_items(struct sdb_response* response, xmlNodePtr items)
 		
 		// The list of nodes to ignore
 		
-		if (strcmp(cur->name, "RequestID") == 0) continue;
-		if (strcmp(cur->name, "RequestId") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestID") == 0) continue;
+		if (strcmp((char*) cur->name, "RequestId") == 0) continue;
 		
 		
 		// Handle errors
@@ -996,10 +1002,10 @@ int sdb_response_parse_items(struct sdb_response* response, xmlNodePtr items)
 		
 		// Item name
 		
-		if (strcmp(cur->name, "ItemName") == 0) {
+		if (strcmp((char*) cur->name, "ItemName") == 0) {
 			assert(cur->children != NULL);
 			content = cur->children;
-			response->items[index].name = XML_GET_CONTENT(content);
+			response->items[index].name = (char*) XML_GET_CONTENT(content);
 			response->items[index].size = 0; 
 			response->items[index].attributes = NULL; 
 			assert(response->items[index].name != NULL);
@@ -1010,7 +1016,7 @@ int sdb_response_parse_items(struct sdb_response* response, xmlNodePtr items)
 		
 		// Item with attributes
 		
-		if (strcmp(cur->name, "Item") == 0) {
+		if (strcmp((char*) cur->name, "Item") == 0) {
 			SDB_SAFE(sdb_response_parse_item(response, &response->items[index++], cur));
 		}
 	}

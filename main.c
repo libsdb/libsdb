@@ -35,6 +35,8 @@
 #include "stdafx.h"
 #include "sdb.h"
 
+#include <ctype.h>
+
 
 /**
  * Read a line
