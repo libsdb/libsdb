@@ -1,9 +1,9 @@
 
-  libsdb: Amazon SimpleDB C Bindinds
+  libsdb: Amazon SimpleDB C Bindings
 ======================================
 
-Written by   : Peter Macko, Harvard University
-Contact      : pmacko@eecs.harvard.edu
+Written by   : Peter Macko, Harvard University <pmacko@eecs.harvard.edu>
+               Clay Loveless, Killersoft <clay@killersoft.com>
 Project Page : http://sourceforge.net/projects/libsdb/
 
 libsdb is a C library for accessing Amazon SimpleDB from C or C++ programs.
