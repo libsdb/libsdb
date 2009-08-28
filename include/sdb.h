@@ -609,7 +609,7 @@ int sdb_get_all(struct SDB* sdb, const char* domain, const char* item, struct sd
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
  */
-int sdb_query(struct SDB* sdb, const char* domain, const char* query, struct sdb_response** response);
+int sdb_query(struct SDB* sdb, const char* domain, const char* query, struct sdb_response** response) __attribute__ ((deprecated));
 
 /**
  * Query with attributes: return one attribute
@@ -621,7 +621,7 @@ int sdb_query(struct SDB* sdb, const char* domain, const char* query, struct sdb
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
  */
-int sdb_query_attr(struct SDB* sdb, const char* domain, const char* query, const char* key, struct sdb_response** response);
+int sdb_query_attr(struct SDB* sdb, const char* domain, const char* query, const char* key, struct sdb_response** response) __attribute__ ((deprecated));
 
 /**
  * Query with attributes: return several attributes
@@ -634,7 +634,7 @@ int sdb_query_attr(struct SDB* sdb, const char* domain, const char* query, const
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
  */
-int sdb_query_attr_many(struct SDB* sdb, const char* domain, const char* query, size_t num, const char** keys, struct sdb_response** response);
+int sdb_query_attr_many(struct SDB* sdb, const char* domain, const char* query, size_t num, const char** keys, struct sdb_response** response) __attribute__ ((deprecated));
 
 /**
  * Query with attributes: return all attributes
@@ -645,7 +645,7 @@ int sdb_query_attr_many(struct SDB* sdb, const char* domain, const char* query, 
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
  */
-int sdb_query_attr_all(struct SDB* sdb, const char* domain, const char* query, struct sdb_response** response);
+int sdb_query_attr_all(struct SDB* sdb, const char* domain, const char* query, struct sdb_response** response) __attribute__ ((deprecated));
 
 /**
  * Query using a SELECT expression
