@@ -41,6 +41,21 @@
 extern "C" {
 #endif
 
+/*****************************************************************************/
+/*                                                                           */
+/*                           I N F O R M A T I O N                           */
+/*                                                                           */
+/*****************************************************************************/
+
+/*
+ * libsdb version
+ */
+#define SDB_VERSION "0.96"
+
+/*
+ * SimpleDB API Version Supported
+ */
+#define SDB_AWS_VERSION "2009-04-15"
 
 
 /*****************************************************************************/
@@ -399,7 +414,14 @@ void sdb_set_retry(struct SDB* sdb, int count, int delay);
  * @param value zero disables automatic NEXT handling, a non-zero value enables it
  */
 void sdb_set_auto_next(struct SDB* sdb, int value); 
-	
+
+/**
+ * Enable gzip Content-Encoding for all service requests.
+ *
+ * @param sdb the SimpleDB handle
+ * @param value zero disabled gzip encoding, a non-zero value enables it
+ */
+void sdb_set_compression(struct SDB* sdb, int value);
 
 
 /*****************************************************************************/

@@ -125,7 +125,7 @@ int main(int argc, char** argv)
 	}
 	
 	if (aws_id[0] == '\0' || aws_secret[0] == '\0') {
-		printf("\nlibsdb Sample Application\n\n");
+		printf("\nlibsdb %s Sample Application\n\n", SDB_VERSION);
 		READ2("AWS ID", aws_id);
 		READ2("AWS Secret", aws_secret);
 	}
@@ -143,7 +143,7 @@ int main(int argc, char** argv)
 	
 	while (TRUE) {
 	
-		printf("\nlibsdb Sample Application\n\n");
+		printf("\nlibsdb %s Sample Application\n\n", SDB_VERSION);
 		printf("  0) Exit                         5) Add an attribute\n");
 		printf("  1) Create a domain              6) Replace an attribute\n");
 		printf("  2) Delete a domain              7) Get all attributes\n");

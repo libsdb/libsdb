@@ -63,7 +63,7 @@ initialize a SDB handle:
   sdb_init(&sdb, aws_id, aws_secret);
 
 The library functions are not thread safe, so you should not share an SDB
-handle between multiple thread. When you are done, destroy the handle using:
+handle between multiple threads. When you are done, destroy the handle using:
 
   sdb_destroy(&sdb);
 
