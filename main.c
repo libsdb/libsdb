@@ -138,6 +138,8 @@ int main(int argc, char** argv)
 	
 	sdb_set_error_file(sdb, stderr);
 	
+	sdb_set_compression(sdb, 1);
+	
 	
 	// Main loop
 	

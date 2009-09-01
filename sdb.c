@@ -440,6 +440,20 @@ void sdb_set_auto_next(struct SDB* sdb, int value)
 }
 
 
+/**
+ * Enable gzip Content-Encoding for all service requests.
+ *
+ * @param sdb the SimpleDB handle
+ * @param value zero disabled gzip encoding, a non-zero value enables it
+ */
+void sdb_set_compression(struct SDB* sdb, int value)
+{
+	if (value > 0) {
+		curl_easy_setopt(sdb->curl_handle, CURLOPT_ENCODING, "gzip");
+	}
+}
+
+
 #define SDB_COMMAND_PREPARE(argc)									\
 	struct sdb_params* __params = sdb_params_alloc(argc);
 	
