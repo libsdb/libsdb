@@ -90,7 +90,8 @@ const char* SDB_AWS_ERRORS[] = {
 	"TooManyRequestedAttributes",
 	"UnsupportedHttpVerb",
 	"UnsupportedNextToken",
-	"URITooLong"
+	"URITooLong",
+	"DuplicateItemName"
 };
 
 

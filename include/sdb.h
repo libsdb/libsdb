@@ -88,7 +88,7 @@ extern "C" {
 #define SDB_CURLM_ERROR(code)		(-1500 - (code))
 #define SDB_AWS_ERROR(code)			(-2000 - (code))
 
-#define SDB_AWS_NUM_ERRORS			41
+#define SDB_AWS_NUM_ERRORS			42
 #define SDB_AWS_ERROR_NAME(code)	((code) > -2000 || (code) <= (-2000 - SDB_AWS_NUM_ERRORS) ? "UnknownError" : SDB_AWS_ERRORS[-((code) + 2000)])
 extern const char* SDB_AWS_ERRORS[];
 
@@ -133,6 +133,7 @@ extern const char* SDB_AWS_ERRORS[];
 #define SDB_E_AWS_UNSUPPORTED_HTTP_VERB						-2038
 #define SDB_E_AWS_UNSUPPORTED_NEXT_TOKEN					-2039
 #define SDB_E_AWS_URI_TOO_LONG								-2040
+#define SDB_E_AWS_DUPLICATE_ITEM_NAME						-2041
 
 
 /*
