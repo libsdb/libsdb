@@ -341,7 +341,11 @@ int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 {
 	xmlNodePtr topcur, cur, content; int i;
 	char* str_content;
-	for (topcur = errors->children; topcur != NULL; topcur = topcur->next) {
+
+	int error_code = SDB_OK;
+	char* message = NULL;
+
+  	for (topcur = errors->children; topcur != NULL; topcur = topcur->next) {
 		
 		
 		// Handle an error node
@@ -372,6 +376,8 @@ int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 								fprintf(response->internal->errout, "SimpleDB ERROR: Unknown error code \"%s\"\n", str_content);
 							}
 						}
+						
+						error_code = response->error;
 					}
 					
 					continue;
@@ -385,9 +391,10 @@ int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 					content = cur->children;
 					assert(XML_GET_CONTENT(content) != NULL);
 					
-					if (response->error_message == NULL) response->error_message = (char*) XML_GET_CONTENT(content);
-					
-					if (response->internal->errout != NULL) {
+					if (response->error_message == NULL) {
+						response->error_message = (char*) XML_GET_CONTENT(content);
+						message = (char*) XML_GET_CONTENT(content);
+					} else if (response->internal->errout != NULL) {
 						fprintf(response->internal->errout, "SimpleDB ERROR: %s\n", XML_GET_CONTENT(content));
 					}
 					continue;
@@ -419,9 +426,18 @@ int sdb_response_parse_errors(struct sdb_response* response, xmlNodePtr errors)
 		// Handle errors
 		
 		if (response->internal->errout != NULL) {
+			if (message != NULL) fprintf(response->internal->errout, "SimpleDB ERROR: %s\n", message);
 			fprintf(response->internal->errout, "SimpleDB ERROR: Invalid node \"%s\" in the AWS error response\n", topcur->name);
 		}
 		return SDB_E_INVALID_ERR_RESPONSE;
+	}
+	
+	
+	// Print the error message if configured to do so
+
+	if (response->internal->errout != NULL && message != NULL
+	 && error_code != SDB_OK && error_code != SDB_E_AWS_SERVICE_UNAVAILABLE) {
+		fprintf(response->internal->errout, "SimpleDB ERROR: %s\n", message);
 	}
 	
 	return SDB_OK;

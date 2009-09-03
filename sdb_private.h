@@ -192,6 +192,7 @@ struct SDB
 	// Other configuration
 	
 	FILE* errout;
+	int dump_on_error;
 	int auto_next;
 	
 	

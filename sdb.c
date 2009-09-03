@@ -184,6 +184,7 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret)
 	(*sdb)->retry_delay = 5000;		/* = 5 ms */
 	
 	(*sdb)->errout = NULL;
+	(*sdb)->dump_on_error = 0;
 	(*sdb)->auto_next = 1;
 	
 	sdb_clear_statistics(*sdb);
@@ -1071,6 +1072,15 @@ int sdb_multi_run(struct SDB* sdb, struct sdb_multi_response** response)
 			(*response)->responses[index] = (struct sdb_response*) malloc(sizeof(struct sdb_response));
 			memset((*response)->responses[index], 0, sizeof(struct sdb_response));
 			(*response)->responses[index]->error = r;
+            
+			if (sdb->errout != NULL && sdb->dump_on_error) {
+				fprintf(sdb->errout, "SimpleDB Error %d\n", r);
+				unsigned u;
+				for (u = 0; u < m->params->size; u++) {
+					fprintf(sdb->errout, "%s = %s\n", m->params->params[u].key, m->params->params[u].value);
+				}
+				fprintf(sdb->errout, "\n");
+			}
 		}
 		
 		if ((*response)->responses[index] != NULL) {
@@ -1227,6 +1237,15 @@ int sdb_multi_run(struct SDB* sdb, struct sdb_multi_response** response)
 				*pres = (struct sdb_response*) malloc(sizeof(struct sdb_response));
 				memset(*pres, 0, sizeof(struct sdb_response));
 				(*pres)->error = r;
+            
+				if (sdb->errout != NULL && sdb->dump_on_error) {
+					fprintf(sdb->errout, "SimpleDB Error %d\n", r);
+					unsigned u;
+					for (u = 0; u < m->params->size; u++) {
+						fprintf(sdb->errout, "%s = %s\n", m->params->params[u].key, m->params->params[u].value);
+					}
+					fprintf(sdb->errout, "\n");
+				}
 			}
 			
 			if (*pres != NULL) {
