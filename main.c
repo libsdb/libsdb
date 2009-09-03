@@ -230,6 +230,44 @@ int main(int argc, char** argv)
 			continue;
 		}
 		
+		if (strcmp(cmd, "v") == 0) {
+			printf("Batch Put Attributes (large)\n");
+			
+			struct sdb_attribute a[256];
+			char* strs = (char*) malloc(256 * 64 * 2);
+			char* names = (char*) malloc(25 * 64);
+			a[0].name = "name";
+			a[0].value = "val:name";
+			a[1].name = "key";
+			a[1].value = "val:key";
+			a[2].name = "ver";
+			a[2].value = "val:ver";
+			int i, j, l;
+			for (i = 3; i < 256; i++) {
+				sprintf(&strs[i * 64 * 2], "key%03d", i);
+				l = 1 + rand() % 62;
+				for (j = 0; j < l; j++) {
+					strs[i * 64 * 2 + 64 + j] = ' ' + rand() % ('z' - ' ' + 1);
+				}
+				strs[i * 64 * 2 + 64 + l] = 0;
+				a[i].name = &strs[i * 64 * 2];
+				a[i].value = &strs[i * 64 * 2 + 64];
+			}
+			
+			struct sdb_item x[25];
+			for (i = 0; i < 25; i++) {
+				sprintf(&names[i * 64], "item%03d", i);
+				x[i].name = &names[i * 64];
+				j = rand() % 128;
+				x[i].size = 1 + rand() % (254 - j);
+				x[i].attributes = &a[j];
+			}
+			COMMAND(sdb_put_batch(sdb, "test1", 25, x)); 
+			free(strs);
+			free(names);
+			continue;
+		}
+		
 		if (strcmp(cmd, "w") == 0) {
 			printf("Batch Put Attributes\n");
 			struct sdb_attribute a[3];
