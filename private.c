@@ -35,7 +35,6 @@
 #include "stdafx.h"
 #include "sdb.h"
 #include "sdb_private.h"
-#include "strnatcmp.h"
 
 #include <libxml/parser.h>
 #include <libxml/tree.h>
@@ -425,11 +424,13 @@ int sdb_params_add_all(struct sdb_params* params, struct sdb_params* other)
  * @return the comparison return code
  */
 int str_compare(const void* a, const void* b)
-{
-	//return strcasecmp((const char*) a, (const char*) b);
-	char const *pa = *(char const **)a, *pb = *(char const **)b;
-	return strnatcmp(pa, pb);
-
+{	
+	struct sdb_pair *pa, *pb;
+	
+	pa = (struct sdb_pair*)a;
+	pb = (struct sdb_pair*)b;
+	
+	return strcmp(pa->key, pb->key);
 }
 
 
