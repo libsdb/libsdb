@@ -151,7 +151,6 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret)
 	
 	(*sdb)->curl_headers = NULL;
 	(*sdb)->curl_headers = curl_slist_append((*sdb)->curl_headers, SDB_HTTP_HEADER_CONTENT_TYPE);
-	(*sdb)->curl_headers = curl_slist_append((*sdb)->curl_headers, SDB_HTTP_HEADER_USER_AGENT);
 	
 	
 	// Initialize Curl
@@ -451,6 +450,23 @@ void sdb_set_compression(struct SDB* sdb, int value)
 {
 	if (value > 0) {
 		curl_easy_setopt(sdb->curl_handle, CURLOPT_ENCODING, "gzip");
+	}
+}
+
+/**
+ * Set the User-Agent header for service requests.
+ *
+ * @param sdb the SimpleDB handle
+ * @param ua string to use
+ */
+void sdb_set_useragent(struct SDB* sdb, const char* ua)
+{
+	char __ua[64];
+	
+	strncpy(__ua, ua, 64);
+	
+	if (strlen(__ua) > 0) {
+		curl_easy_setopt(sdb->curl_handle, CURLOPT_USERAGENT, __ua);
 	}
 }
 

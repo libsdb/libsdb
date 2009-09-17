@@ -49,7 +49,6 @@ extern "C" {
 #define AWS_URL							"https://sdb.amazonaws.com"
 
 #define SDB_HTTP_HEADER_CONTENT_TYPE	"Content-Type: application/x-www-form-urlencoded; charset=utf-8"
-#define SDB_HTTP_HEADER_USER_AGENT		"User-Agent: libsdb"
 
 #define SDB_MAX_MULTI_FREE				256
 #define SDB_LEN_COMMAND					32

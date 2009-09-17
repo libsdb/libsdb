@@ -424,6 +424,14 @@ void sdb_set_auto_next(struct SDB* sdb, int value);
  */
 void sdb_set_compression(struct SDB* sdb, int value);
 
+/**
+ * Set the User-Agent header for service requests.
+ *
+ * @param sdb the SimpleDB handle
+ * @param ua string to use
+ */
+void sdb_set_useragent(struct SDB* sdb, const char* ua);
+
 
 /*****************************************************************************/
 /*                                                                           */

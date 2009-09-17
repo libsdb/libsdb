@@ -103,6 +103,7 @@ const char* SDB_AWS_ERRORS[] = {
 CURL* sdb_create_curl(struct SDB* sdb)
 {
 	CURL* h = NULL;
+	char ua[16];
 
 	// Avoid SSL context creation failures
 	SSL_library_init();
@@ -110,13 +111,19 @@ CURL* sdb_create_curl(struct SDB* sdb)
 	// Create the handle
 	
 	if ((h = curl_easy_init()) == NULL) return NULL;
-	
-	
+		
 	// Configure the Curl handle
 	
 	curl_easy_setopt(h, CURLOPT_URL, AWS_URL);
 	curl_easy_setopt(h, CURLOPT_HTTPHEADER, sdb->curl_headers);
 	curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, sdb_write_callback);
+	
+	// Define default User-Agent
+	
+	strcpy(ua, "libsdb/");
+	strcat(ua, SDB_VERSION);
+
+	curl_easy_setopt(h, CURLOPT_USERAGENT, ua);
 	
 	return h;
 }
@@ -1223,7 +1230,7 @@ long sdb_estimate_http_sent(struct SDB* sdb, long post_size)
 	// User-Agent: libsdb
 	// Content-Length: 169
 	
-	return (strlen(SDB_HTTP_HEADER_CONTENT_TYPE) + strlen(SDB_HTTP_HEADER_USER_AGENT) + 2) + 76 /* size of other headers */ + digits(post_size, 10) + 2 /* \n\n after header */ - 1;
+	return (strlen(SDB_HTTP_HEADER_CONTENT_TYPE) + 64 /* space for custom User-Agent str */ + 2) + 76 /* size of other headers */ + digits(post_size, 10) + 2 /* \n\n after header */ - 1;
 }
 
 

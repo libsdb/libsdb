@@ -94,7 +94,7 @@ int main(int argc, char** argv)
 	struct sdb_response* res;
 	FILE *f;
 	
-	char aws_id[BUF_SIZE], aws_secret[BUF_SIZE]; 
+	char aws_id[BUF_SIZE], aws_secret[BUF_SIZE], ua[BUF_SIZE]; 
 	char cmd[BUF_SIZE], arg1[BUF_SIZE], arg2[BUF_SIZE], arg3[BUF_SIZE], arg4[BUF_SIZE];
 	
 	
@@ -139,7 +139,9 @@ int main(int argc, char** argv)
 	sdb_set_error_file(sdb, stderr);
 	
 	sdb_set_compression(sdb, 1);
-	
+	strcpy(ua, "libsdb-test/");
+	strcat(ua, SDB_VERSION);
+	sdb_set_useragent(sdb, ua);
 	
 	// Main loop
 	
