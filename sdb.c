@@ -461,9 +461,10 @@ void sdb_set_compression(struct SDB* sdb, int value)
  */
 void sdb_set_useragent(struct SDB* sdb, const char* ua)
 {
-	char __ua[64];
+	char __ua[65];
 	
-	strncpy(__ua, ua, 64);
+	strncpy(__ua, ua, 65);
+	__ua[64]='\0'; /* null terminate for safety */
 	
 	if (strlen(__ua) > 0) {
 		curl_easy_setopt(sdb->curl_handle, CURLOPT_USERAGENT, __ua);
