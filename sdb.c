@@ -918,6 +918,39 @@ int sdb_query(struct SDB* sdb, const char* domain, const char* query, struct sdb
 	SDB_COMMAND_EXECUTE_RS("Query");
 }
 
+/**
+ * Delete an item
+ * 
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete(struct SDB* sdb, const char* domain, const char* item)
+{
+	SDB_COMMAND_PREPARE(8);
+	SDB_COMMAND_PARAM("ItemName", item);
+	SDB_COMMAND_PARAM("DomainName", domain);
+	SDB_COMMAND_EXECUTE("DeleteAttributes");
+}
+
+/**
+ * Delete an attribute
+ * 
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param key the attribute name
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete_attr(struct SDB* sdb, const char* domain, const char* item, const char* key)
+{
+	SDB_COMMAND_PREPARE(8);
+	SDB_COMMAND_PARAM("ItemName", item);
+	SDB_COMMAND_PARAM("DomainName", domain);
+	SDB_COMMAND_PARAM("Attribute.0.Name", key);
+	SDB_COMMAND_EXECUTE("DeleteAttributes");
+}
 
 /**
  * Query with attributes: return one attribute

@@ -643,6 +643,27 @@ int sdb_get_all(struct SDB* sdb, const char* domain, const char* item, struct sd
 int sdb_query(struct SDB* sdb, const char* domain, const char* query, struct sdb_response** response) __attribute__ ((deprecated));
 
 /**
+ * Delete an item
+ * 
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete(struct SDB* sdb, const char* domain, const char* item);
+
+/**
+ * Delete an attribute
+ * 
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param key the attribute name
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete_attr(struct SDB* sdb, const char* domain, const char* item, const char* key);
+
+/**
  * Query with attributes: return one attribute
  * 
  * @param sdb the SimpleDB handle

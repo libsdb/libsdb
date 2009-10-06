@@ -47,6 +47,7 @@ extern "C" {
 
 
 #define AWS_URL							"https://sdb.amazonaws.com"
+#define AWS_EU_URL						"https://sdb.eu-west-1.amazonaws.com"
 
 #define SDB_HTTP_HEADER_CONTENT_TYPE	"Content-Type: application/x-www-form-urlencoded; charset=utf-8"
 

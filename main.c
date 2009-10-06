@@ -148,11 +148,12 @@ int main(int argc, char** argv)
 	while (TRUE) {
 	
 		printf("\nlibsdb %s Sample Application\n\n", SDB_VERSION);
-		printf("  0) Exit                         5) Add an attribute\n");
-		printf("  1) Create a domain              6) Replace an attribute\n");
-		printf("  2) Delete a domain              7) Get all attributes\n");
-		printf("  3) List domains                 8) Query with attributes\n");
-		printf("  4) Output domain meta-data      9) Query using SELECT\n");
+		printf("  0) Exit                          6) Add an attribute\n");
+		printf("  1) Create a domain               7) Replace an attribute\n");
+		printf("  2) Delete a domain               8) Delete an attribute\n");
+		printf("  3) List domains                  9) Get all attributes\n");
+		printf("  4) Output domain meta-data      10) Query with attributes\n");
+		printf("  5) Delete an item               11) Query using SELECT\n");
 		printf("\n");
 		
 		READ("Command", cmd);
@@ -188,8 +189,16 @@ int main(int argc, char** argv)
 			COMMAND(sdb_domain_metadata(sdb, arg1, &res)); 
 			continue;
 		}
-		
+
 		if (strcmp(cmd, "5") == 0) {
+			printf("Add an attribute\n");
+			READ("Domain", arg1);
+			READ("Item", arg2);
+			COMMAND(sdb_delete(sdb, arg1, arg2)); 
+			continue;
+		}
+		
+		if (strcmp(cmd, "6") == 0) {
 			printf("Add an attribute\n");
 			READ("Domain", arg1);
 			READ("Item", arg2);
@@ -199,7 +208,7 @@ int main(int argc, char** argv)
 			continue;
 		}
 		
-		if (strcmp(cmd, "6") == 0) {
+		if (strcmp(cmd, "7") == 0) {
 			printf("Replace an attribute\n");
 			READ("Domain", arg1);
 			READ("Item", arg2);
@@ -208,8 +217,17 @@ int main(int argc, char** argv)
 			COMMAND(sdb_replace(sdb, arg1, arg2, arg3, arg4)); 
 			continue;
 		}
+
+		if (strcmp(cmd, "8") == 0) {
+			printf("Deleting an attribute\n");
+			READ("Domain", arg1);
+			READ("Item", arg2);
+			READ("Key", arg3);
+			COMMAND(sdb_delete_attr(sdb, arg1, arg2, arg3)); 
+			continue;
+		}
 		
-		if (strcmp(cmd, "7") == 0) {
+		if (strcmp(cmd, "9") == 0) {
 			printf("Get all attributes\n");
 			READ("Domain", arg1);
 			READ("Item", arg2);
@@ -217,7 +235,7 @@ int main(int argc, char** argv)
 			continue;
 		}
 		
-		if (strcmp(cmd, "8") == 0) {
+		if (strcmp(cmd, "10") == 0) {
 			printf("Query with attributes\n");
 			READ("Domain", arg1);
 			READ("Query", arg2);
@@ -225,7 +243,7 @@ int main(int argc, char** argv)
 			continue;
 		}
 		
-		if (strcmp(cmd, "9") == 0) {
+		if (strcmp(cmd, "11") == 0) {
 			printf("Query using SELECT\n");
 			READ("Query", arg1);
 			COMMAND(sdb_select(sdb, arg1, &res)); 
