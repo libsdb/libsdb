@@ -199,7 +199,7 @@ struct sdb_domain_metadata
 	long attr_name_count; 		// The number of unique attribute names in the domain.
 	long item_names_size;	 	// The total size of all item names in the domain, in bytes.
 	long attr_values_size;	 	// The total size of all attribute values, in bytes.
-	long attr_names_size;	 	// The total size of all unique attribute names, in bytes. 
+	long attr_names_size;	 	// The total size of all unique attribute names, in bytes.
 };
 
 
@@ -230,40 +230,40 @@ struct sdb_item
 struct sdb_response
 {
 	// Result
-	
+
 	int size;
 	int has_more;
-	
+
 	int type;
-	
+
 	union {
 		char** domains;
 		struct sdb_domain_metadata* domain_metadata;
 		struct sdb_attribute* attributes;
 		struct sdb_item* items;
 	};
-	
-	
+
+
 	// Errors
-	
+
 	int error;
-	char* error_message; 
+	char* error_message;
 	int num_errors;
-	
-	
+
+
 	// Metadata
-	
+
 	double box_usage;
-	
-	
+
+
 	// Metadata specific to the multi interface
-	
+
 	sdb_multi multi_handle;
 	int return_code;
-	
-	
+
+
 	// Internal data
-	
+
 	struct sdb_response_internal* internal;
 };
 
@@ -322,7 +322,7 @@ int sdb_global_cleanup(void);
 
 /**
  * Initialize the environment
- * 
+ *
  * @param sdb a pointer to the SimpleDB handle
  * @param key the SimpleDB key
  * @param secret the SimpleDB secret key
@@ -332,7 +332,7 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret);
 
 /**
  * Destroy the environment
- * 
+ *
  * @param sdb a pointer to the SimpleDB handle
  * @return SDB_OK if no errors occurred
  */
@@ -348,36 +348,36 @@ int sdb_destroy(struct SDB** sdb);
 
 /**
  * Free the response structure
- * 
+ *
  * @param response the data structure
  */
 void sdb_free(struct sdb_response** response);
 
 /**
  * Free the multi response structure
- * 
+ *
  * @param response the data structure
  */
 void sdb_multi_free(struct sdb_multi_response** response);
 
 /**
  * Print the response
- * 
+ *
  * @param r the data structure
  */
 void sdb_print(struct sdb_response* r);
 
 /**
  * Print the response
- * 
- * @param f the output file 
+ *
+ * @param f the output file
  * @param r the data structure
  */
 void sdb_fprint(FILE* f, struct sdb_response* r);
 
 /**
  * Count the number of failed commands in a multi response
- * 
+ *
  * @param response the data structure
  * @return the number of failed commands
  */
@@ -393,7 +393,7 @@ int sdb_multi_count_errors(struct sdb_multi_response* response);
 
 /**
  * Set the output FILE for additional error messages
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param f the output FILE
  */
@@ -401,20 +401,20 @@ void sdb_set_error_file(struct SDB* sdb, FILE* f);
 
 /**
  * Set the retry configuration
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param count the maximum number of retries
  * @param delay the number of milliseconds between two retries
  */
-void sdb_set_retry(struct SDB* sdb, int count, int delay); 
-	
+void sdb_set_retry(struct SDB* sdb, int count, int delay);
+
 /**
  * Set automatic handling of the NEXT tokens
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param value zero disables automatic NEXT handling, a non-zero value enables it
  */
-void sdb_set_auto_next(struct SDB* sdb, int value); 
+void sdb_set_auto_next(struct SDB* sdb, int value);
 
 /**
  * Enable gzip Content-Encoding for all service requests.
@@ -441,7 +441,7 @@ void sdb_set_useragent(struct SDB* sdb, const char* ua);
 
 /**
  * Return the collected statistics
- * 
+ *
  * @param sdb the SimpleDB handle
  * @return the struct with statistics
  */
@@ -488,7 +488,7 @@ int sdb_next(struct SDB* sdb, struct sdb_response** response, int append);
 
 /**
  * Create a domain
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param name the domain name
  * @return SDB_OK if no errors occurred
@@ -497,7 +497,7 @@ int sdb_create_domain(struct SDB* sdb, const char* name);
 
 /**
  * Delete a domain
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param name the domain name
  * @return SDB_OK if no errors occurred
@@ -506,7 +506,7 @@ int sdb_delete_domain(struct SDB* sdb, const char* name);
 
 /**
  * List domains
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
@@ -515,7 +515,7 @@ int sdb_list_domains(struct SDB* sdb, struct sdb_response** response);
 
 /**
  * Get domain meta-data
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param name the domain name
  * @param response a pointer to the place to store the response
@@ -525,7 +525,7 @@ int sdb_domain_metadata(struct SDB* sdb, const char* name, struct sdb_response**
 
 /**
  * Put an attribute to the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -537,7 +537,7 @@ int sdb_put(struct SDB* sdb, const char* domain, const char* item, const char* k
 
 /**
  * Replace an attribute in the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -549,7 +549,7 @@ int sdb_replace(struct SDB* sdb, const char* domain, const char* item, const cha
 
 /**
  * Put several attributes to the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -562,7 +562,7 @@ int sdb_put_many(struct SDB* sdb, const char* domain, const char* item, size_t n
 
 /**
  * Replace several attributes in the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -575,7 +575,7 @@ int sdb_replace_many(struct SDB* sdb, const char* domain, const char* item, size
 
 /**
  * Put attributes of several items to the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param num the number of items
@@ -586,7 +586,7 @@ int sdb_put_batch(struct SDB* sdb, const char* domain, size_t num, const struct 
 
 /**
  * Replace attributes of several items in the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param num the number of items
@@ -596,8 +596,67 @@ int sdb_put_batch(struct SDB* sdb, const char* domain, size_t num, const struct 
 int sdb_replace_batch(struct SDB* sdb, const char* domain, size_t num, const struct sdb_item* items);
 
 /**
+ * Delete an item
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete(struct SDB* sdb, const char* domain, const char* item);
+
+/**
+ * Delete an attribute
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param key the attribute name
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete_attr(struct SDB* sdb, const char* domain, const char* item, const char* key);
+
+/**
+ * Delete multiple attributes
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param num the number of keys
+ * @param keys the array of attribute names
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete_attr_many(struct SDB* sdb, const char* domain, const char* item, size_t num, const char** keys);
+
+/**
+ * Delete an attribute/value pairs
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param num the number of keys
+ * @param keys the attribute name
+ * @param values the attribute value
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete_attr_ext(struct SDB* sdb, const char* domain, const char* item, size_t num, const char* key, const char* value);
+
+/**
+ * Delete multiple attribute/value pairs
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param num the number of keys
+ * @param keys the array of attribute names
+ * @param values the array of attribute values
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_delete_attr_ext_many(struct SDB* sdb, const char* domain, const char* item, size_t num, const char** keys, const char** values);
+
+/**
  * Get an attribute
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -609,7 +668,7 @@ int sdb_get(struct SDB* sdb, const char* domain, const char* item, const char* k
 
 /**
  * Get several attributes
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -622,7 +681,7 @@ int sdb_get_many(struct SDB* sdb, const char* domain, const char* item, size_t n
 
 /**
  * Get all attributes
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -633,42 +692,21 @@ int sdb_get_all(struct SDB* sdb, const char* domain, const char* item, struct sd
 
 /**
  * Query the database and return the names of the matching records
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
- * @param query the query expression 
+ * @param query the query expression
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
  */
 int sdb_query(struct SDB* sdb, const char* domain, const char* query, struct sdb_response** response) __attribute__ ((deprecated));
 
 /**
- * Delete an item
- * 
- * @param sdb the SimpleDB handle
- * @param domain the domain name
- * @param item the item name
- * @return SDB_OK if no errors occurred
- */
-int sdb_delete(struct SDB* sdb, const char* domain, const char* item);
-
-/**
- * Delete an attribute
- * 
- * @param sdb the SimpleDB handle
- * @param domain the domain name
- * @param item the item name
- * @param key the attribute name
- * @return SDB_OK if no errors occurred
- */
-int sdb_delete_attr(struct SDB* sdb, const char* domain, const char* item, const char* key);
-
-/**
  * Query with attributes: return one attribute
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
- * @param query the query expression 
+ * @param query the query expression
  * @param key the attribute name to return
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
@@ -677,10 +715,10 @@ int sdb_query_attr(struct SDB* sdb, const char* domain, const char* query, const
 
 /**
  * Query with attributes: return several attributes
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
- * @param query the query expression 
+ * @param query the query expression
  * @param num the number of attributes
  * @param keys the names of attributes to return
  * @param response a pointer to the place to store the response
@@ -690,10 +728,10 @@ int sdb_query_attr_many(struct SDB* sdb, const char* domain, const char* query, 
 
 /**
  * Query with attributes: return all attributes
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
- * @param query the query expression 
+ * @param query the query expression
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
  */
@@ -701,9 +739,9 @@ int sdb_query_attr_all(struct SDB* sdb, const char* domain, const char* query, s
 
 /**
  * Query using a SELECT expression
- * 
+ *
  * @param sdb the SimpleDB handle
- * @param expr the select expression 
+ * @param expr the select expression
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
  */
@@ -719,7 +757,7 @@ int sdb_select(struct SDB* sdb, const char* expr, struct sdb_response** response
 
 /**
  * Perform all pending operations specified using sdb_multi_* functions
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param response a pointer to the place to store the response
  * @return SDB_OK if no errors occurred
@@ -728,7 +766,7 @@ int sdb_multi_run(struct SDB* sdb, struct sdb_multi_response** response);
 
 /**
  * Create a domain
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param name the domain name
  * @return the command execution handle, or SDB_MULTI_ERROR on error
@@ -737,7 +775,7 @@ sdb_multi sdb_multi_create_domain(struct SDB* sdb, const char* name);
 
 /**
  * Delete a domain
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param name the domain name
  * @return the command execution handle, or SDB_MULTI_ERROR on error
@@ -746,7 +784,7 @@ sdb_multi sdb_multi_delete_domain(struct SDB* sdb, const char* name);
 
 /**
  * List domains
- * 
+ *
  * @param sdb the SimpleDB handle
  * @return the command execution handle, or SDB_MULTI_ERROR on error
  */
@@ -754,7 +792,7 @@ sdb_multi sdb_multi_list_domains(struct SDB* sdb);
 
 /**
  * Get domain meta-data
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param name the domain name
  * @return the command execution handle, or SDB_MULTI_ERROR on error
@@ -763,7 +801,7 @@ sdb_multi sdb_multi_domain_metadata(struct SDB* sdb, const char* name);
 
 /**
  * Put an attribute to the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -775,7 +813,7 @@ sdb_multi sdb_multi_put(struct SDB* sdb, const char* domain, const char* item, c
 
 /**
  * Replace an attribute in the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -787,7 +825,7 @@ sdb_multi sdb_multi_replace(struct SDB* sdb, const char* domain, const char* ite
 
 /**
  * Put several attributes to the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -800,7 +838,7 @@ sdb_multi sdb_multi_put_many(struct SDB* sdb, const char* domain, const char* it
 
 /**
  * Replace several attributes in the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -813,7 +851,7 @@ sdb_multi sdb_multi_replace_many(struct SDB* sdb, const char* domain, const char
 
 /**
  * Put attributes of several items to the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param num the number of items
@@ -824,7 +862,7 @@ sdb_multi sdb_multi_put_batch(struct SDB* sdb, const char* domain, size_t num, c
 
 /**
  * Replace attributes of several items in the database
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param num the number of items
@@ -834,8 +872,67 @@ sdb_multi sdb_multi_put_batch(struct SDB* sdb, const char* domain, size_t num, c
 sdb_multi sdb_multi_replace_batch(struct SDB* sdb, const char* domain, size_t num, const struct sdb_item* items);
 
 /**
+ * Delete an item
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @return the command execution handle, or SDB_MULTI_ERROR on error
+ */
+sdb_multi sdb_multi_delete(struct SDB* sdb, const char* domain, const char* item);
+
+/**
+ * Delete an attribute
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param key the attribute name
+ * @return the command execution handle, or SDB_MULTI_ERROR on error
+ */
+sdb_multi sdb_multi_delete_attr(struct SDB* sdb, const char* domain, const char* item, const char* key);
+
+/**
+ * Delete multiple attributes
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param num the number of keys
+ * @param keys the array of attribute names
+ * @return the command execution handle, or SDB_MULTI_ERROR on error
+ */
+sdb_multi sdb_multi_delete_attr_many(struct SDB* sdb, const char* domain, const char* item, size_t num, const char** keys);
+
+/**
+ * Delete an attribute/value pairs
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param num the number of keys
+ * @param keys the attribute name
+ * @param values the attribute value
+ * @return the command execution handle, or SDB_MULTI_ERROR on error
+ */
+sdb_multi sdb_multi_delete_attr_ext(struct SDB* sdb, const char* domain, const char* item, size_t num, const char* key, const char* value);
+
+/**
+ * Delete multiple attribute/value pairs
+ *
+ * @param sdb the SimpleDB handle
+ * @param domain the domain name
+ * @param item the item name
+ * @param num the number of keys
+ * @param keys the array of attribute names
+ * @param values the array of attribute values
+ * @return the command execution handle, or SDB_MULTI_ERROR on error
+ */
+sdb_multi sdb_multi_delete_attr_ext_many(struct SDB* sdb, const char* domain, const char* item, size_t num, const char** keys, const char** values);
+
+/**
  * Get an attribute
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -846,7 +943,7 @@ sdb_multi sdb_multi_get(struct SDB* sdb, const char* domain, const char* item, c
 
 /**
  * Get several attributes
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -858,7 +955,7 @@ sdb_multi sdb_multi_get_many(struct SDB* sdb, const char* domain, const char* it
 
 /**
  * Get all attributes
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
@@ -868,52 +965,52 @@ sdb_multi sdb_multi_get_all(struct SDB* sdb, const char* domain, const char* ite
 
 /**
  * Query the database and return the names of the matching records
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
- * @param query the query expression 
+ * @param query the query expression
  * @return the command execution handle, or SDB_MULTI_ERROR on error
  */
-sdb_multi sdb_multi_query(struct SDB* sdb, const char* domain, const char* query);
+sdb_multi sdb_multi_query(struct SDB* sdb, const char* domain, const char* query) __attribute__ ((deprecated));
 
 /**
  * Query with attributes: return one attribute
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
- * @param query the query expression 
+ * @param query the query expression
  * @param key the attribute name to return
  * @return the command execution handle, or SDB_MULTI_ERROR on error
  */
-sdb_multi sdb_multi_query_attr(struct SDB* sdb, const char* domain, const char* query, const char* key);
+sdb_multi sdb_multi_query_attr(struct SDB* sdb, const char* domain, const char* query, const char* key) __attribute__ ((deprecated));
 
 /**
  * Query with attributes: return several attributes
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
- * @param query the query expression 
+ * @param query the query expression
  * @param num the number of attributes
  * @param keys the names of attributes to return
  * @return the command execution handle, or SDB_MULTI_ERROR on error
  */
-sdb_multi sdb_multi_query_attr_many(struct SDB* sdb, const char* domain, const char* query, size_t num, const char** keys);
+sdb_multi sdb_multi_query_attr_many(struct SDB* sdb, const char* domain, const char* query, size_t num, const char** keys) __attribute__ ((deprecated));
 
 /**
  * Query with attributes: return all attributes
- * 
+ *
  * @param sdb the SimpleDB handle
  * @param domain the domain name
- * @param query the query expression 
+ * @param query the query expression
  * @return the command execution handle, or SDB_MULTI_ERROR on error
  */
-sdb_multi sdb_multi_query_attr_all(struct SDB* sdb, const char* domain, const char* query);
+sdb_multi sdb_multi_query_attr_all(struct SDB* sdb, const char* domain, const char* query) __attribute__ ((deprecated));
 
 /**
  * Query using a SELECT expression
- * 
+ *
  * @param sdb the SimpleDB handle
- * @param expr the select expression 
+ * @param expr the select expression
  * @return the command execution handle, or SDB_MULTI_ERROR on error
  */
 sdb_multi sdb_multi_select(struct SDB* sdb, const char* expr);
