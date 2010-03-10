@@ -1,3 +1,4 @@
+#! /bin/sh
 #
 # Amazon SimpleDB C bindings
 #
@@ -31,55 +32,70 @@
 # SUCH DAMAGE.
 #
 
-include mk/defs.mk
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+libdir=@libdir@
 
+usage()
+{
+    cat <<EOF
+Usage: sdb-config [OPTION]
 
-#
-# Build output
-#
+Available values for OPTION include:
 
-BUILD_DIR := build
+  --cflags    pre-processor and compiler flags
+  --help      display this help and exit
+  --libs      library linking information
+  --prefix    libsdl install prefix
+  --version   output version information
+EOF
 
+    exit $1
+}
 
-#
-# Make-related flags
-#
+if test $# -eq 0; then
+    usage 1
+fi
 
-SHELL := /bin/bash
-CC := gcc
+while test $# -gt 0; do
+    case "$1" in
+    # this deals with options in the style
+    # --option=value and extracts the value part
+    # [not currently used]
+    -*=*) value=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) value= ;;
+    esac
 
+    case "$1" in
 
-#
-# Libraries
-#
+    --prefix)
+	echo "$prefix"
+	;;
+	
+    --version)
+	echo @PACKAGE_STRING@
+	exit 0
+	;;
 
-# Curl
+    --help)
+	usage 0
+	;;
 
-CURL_INCLUDE_FLAGS := $(shell curl-config --cflags)
-CURL_LINKER_FLAGS := 
-CURL_LIBRARIES := $(shell curl-config --libs)
+    --cflags)
+        echo @LIB_INCLUDE_FLAGS@
+       	;;
 
-# LibXML
+    --libs)
+        echo @LIB_LIBRARIES@ -L$libdir -lsdb -lssl
+       	;;
 
-XML_INCLUDE_FLAGS := $(shell xml2-config --cflags)
-XML_LINKER_FLAGS := 
-XML_LIBRARIES := $(shell xml2-config --libs)
+    *)
+        echo "unknown option: $1"
+	usage 1
+	;;
+    esac
+    shift
+done
 
-# Combine the flags
-
-LIB_INCLUDE_FLAGS := $(CURL_INCLUDE_FLAGS) $(XML_INCLUDE_FLAGS)
-LIB_LINKER_FLAGS := -L/usr/lib $(CURL_LINKER_FLAGS) $(XML_LINKER_FLAGS)
-LIB_LIBRARIES := $(CURL_LIBRARIES) $(XML_LIBRARIES) -lssl
-
-
-#
-# Create flags
-#
-
-DEBUG_FLAGS := -ggdb -D_DEBUG
-
-INCLUDE_FLAGS := $(LIB_INCLUDE_FLAGS) -Iinclude
-COMPILER_FLAGS := -O3 -Wall
-
-LINKER_FLAGS := $(LIB_LINKER_FLAGS)
-LIBRARIES := $(LIB_LIBRARIES)
+exit 0

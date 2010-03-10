@@ -1,4 +1,3 @@
-#! /bin/sh
 #
 # Amazon SimpleDB C bindings
 #
@@ -32,70 +31,100 @@
 # SUCH DAMAGE.
 #
 
-prefix=/usr
-exec_prefix=/usr
-includedir=/usr/include
-libdir=/usr/lib
 
-usage()
-{
-    cat <<EOF
-Usage: sdb-config [OPTION]
+#
+# Source files
+#
 
-Available values for OPTION include:
+SOURCES := sdb.c util.c response.c private.c base64.c
 
-  --cflags    pre-processor and compiler flags
-  --help      display this help and exit
-  --libs      library linking information
-  --prefix    libsdl install prefix
-  --version   output version information
-EOF
+TEST_SOURCES := main.c
 
-    exit $1
-}
+CONFIG_SCRIPT := sdb-config
 
-if test $# -eq 0; then
-    usage 1
-fi
 
-while test $# -gt 0; do
-    case "$1" in
-    # this deals with options in the style
-    # --option=value and extracts the value part
-    # [not currently used]
-    -*=*) value=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
-    *) value= ;;
-    esac
+#
+# Target executable
+#
 
-    case "$1" in
+TARGET := libsdb.a
+TEST_TARGET := test
 
-    --prefix)
-	echo "$prefix"
-	;;
-	
-    --version)
-	echo libsdb 0.95
-	exit 0
-	;;
 
-    --help)
-	usage 0
-	;;
+#
+# Additional configuration
+#
 
-    --cflags)
-        echo `curl-config --cflags` `xml2-config --cflags`
-       	;;
+RUN_DEV_ARGS := 
 
-    --libs)
-        echo `curl-config --libs` `xml2-config --libs` -L$libdir -lsdb -lssl
-       	;;
 
-    *)
-        echo "unknown option: $1"
-	usage 1
-	;;
-    esac
-    shift
-done
+#
+# Include the magic script
+#
 
-exit 0
+#include mk/lib-and-test.mk
+
+#
+# Build output
+#
+
+BUILD_DIR := build
+
+
+#
+# Make-related flags
+#
+
+SHELL := /bin/bash
+CC := @CC@
+
+
+#
+# Libraries
+#
+
+# Curl
+
+CURL_INCLUDE_FLAGS := @CURL_INCLUDE_FLAGS@
+CURL_LINKER_FLAGS := @CURL_LIBRARIES@
+CURL_LIBRARIES := @CURL_LIBRARIES@
+
+# LibXML
+
+XML_INCLUDE_FLAGS := @XML_INCLUDE_FLAGS@
+XML_LINKER_FLAGS := @XML_LIBRARIES@
+XML_LIBRARIES := @XML_LIBRARIES@
+
+# Combine the flags
+
+LIB_INCLUDE_FLAGS := $(CURL_INCLUDE_FLAGS) $(XML_INCLUDE_FLAGS)
+LIB_LINKER_FLAGS := -L/usr/lib $(CURL_LINKER_FLAGS) $(XML_LINKER_FLAGS)
+LIB_LIBRARIES := $(CURL_LIBRARIES) $(XML_LIBRARIES) -lssl
+
+
+#
+# Create flags
+#
+
+DEBUG_FLAGS := @DEBUG_FLAGS@
+
+INCLUDE_FLAGS := $(LIB_INCLUDE_FLAGS) -Iinclude
+COMPILER_FLAGS := -O3 -Wall
+
+LINKER_FLAGS := $(LIB_LINKER_FLAGS)
+LIBRARIES := $(LIB_LIBRARIES)
+
+
+include mk/lib-and-test.mk
+
+#
+# Additional targets
+#
+
+.PHONY: massiveclean
+
+massiveclean: clean
+	for i in `find . -name CVS`; do rm -rf $$i; done 
+	rm -rf libsdb.kdev*
+	find . -name "*~" -delete
+	find . -name ".#*" -delete

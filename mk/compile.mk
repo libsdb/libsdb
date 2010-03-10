@@ -31,8 +31,8 @@
 # SUCH DAMAGE.
 #
 
-include mk/header.mk
-
+#include mk/header.mk
+include mk/defs.mk
 
 #
 # Commands
