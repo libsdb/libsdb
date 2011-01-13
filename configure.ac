@@ -73,6 +73,12 @@ AC_FUNC_SELECT_ARGTYPES
 AC_FUNC_STRTOD
 AC_CHECK_FUNCS([memset select strchr strdup strtol])
 
+# Check for SSL functions
+AC_SEARCH_LIBS(SSL_library_init, [ssl])
+AC_SEARCH_LIBS(HMAC, [ssl crypto])
+AC_SEARCH_LIBS(EVP_sha256, [ssl crypto])
+
+
 # Checks for external libraries.
 
 #
@@ -188,7 +194,7 @@ AC_SUBST([XML_INCLUDE_FLAGS], [$XML2_INCL])
 AC_SUBST([XML_LIBRARIES], [$XML2_LIBS])
 
 AC_SUBST([LIB_INCLUDE_FLAGS], ["$CURL_INCL $XML2_INCL"])
-AC_SUBST([LIB_LIBRARIES], ["$CURL_LIBS $XML2_LIBS"])
+AC_SUBST([LIB_LIBRARIES], ["$CURL_LIBS $XML2_LIBS $LIBS"])
 
 AC_ARG_ENABLE([debug],
     [AS_HELP_STRING([--enable-debug],

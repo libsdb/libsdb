@@ -87,7 +87,7 @@ while test $# -gt 0; do
        	;;
 
     --libs)
-        echo @LIB_LIBRARIES@ -L$libdir -lsdb -lssl
+        echo @LIB_LIBRARIES@ -L$libdir -lsdb
        	;;
 
     *)
