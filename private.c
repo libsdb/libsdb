@@ -114,7 +114,7 @@ CURL* sdb_create_curl(struct SDB* sdb)
 		
 	// Configure the Curl handle
 	
-	curl_easy_setopt(h, CURLOPT_URL, AWS_URL);
+	curl_easy_setopt(h, CURLOPT_URL, sdb->aws_url);
 	curl_easy_setopt(h, CURLOPT_HTTPHEADER, sdb->curl_headers);
 	curl_easy_setopt(h, CURLOPT_WRITEFUNCTION, sdb_write_callback);
 	

@@ -157,6 +157,8 @@ struct SDB
 	CURLM* curl_multi;
 	
 	struct curl_slist *curl_headers;
+
+	char* aws_url;
 	
 	
 	// SimpleDB Authentication

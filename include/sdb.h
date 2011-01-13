@@ -331,6 +331,17 @@ int sdb_global_cleanup(void);
 int sdb_init(struct SDB** sdb, const char* key, const char* secret);
 
 /**
+ * Initialize the environment
+ *
+ * @param sdb a pointer to the SimpleDB handle
+ * @param key the SimpleDB key
+ * @param secret the SimpleDB secret key
+ * @param service the service URL
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const char* service);
+
+/**
  * Destroy the environment
  *
  * @param sdb a pointer to the SimpleDB handle
@@ -634,12 +645,11 @@ int sdb_delete_attr_many(struct SDB* sdb, const char* domain, const char* item, 
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
- * @param num the number of keys
- * @param keys the attribute name
- * @param values the attribute value
+ * @param key the attribute name
+ * @param value the attribute value
  * @return SDB_OK if no errors occurred
  */
-int sdb_delete_attr_ext(struct SDB* sdb, const char* domain, const char* item, size_t num, const char* key, const char* value);
+int sdb_delete_attr_ext(struct SDB* sdb, const char* domain, const char* item, const char* key, const char* value);
 
 /**
  * Delete multiple attribute/value pairs
@@ -910,12 +920,11 @@ sdb_multi sdb_multi_delete_attr_many(struct SDB* sdb, const char* domain, const 
  * @param sdb the SimpleDB handle
  * @param domain the domain name
  * @param item the item name
- * @param num the number of keys
- * @param keys the attribute name
- * @param values the attribute value
+ * @param key the attribute name
+ * @param value the attribute value
  * @return the command execution handle, or SDB_MULTI_ERROR on error
  */
-sdb_multi sdb_multi_delete_attr_ext(struct SDB* sdb, const char* domain, const char* item, size_t num, const char* key, const char* value);
+sdb_multi sdb_multi_delete_attr_ext(struct SDB* sdb, const char* domain, const char* item, const char* key, const char* value);
 
 /**
  * Delete multiple attribute/value pairs
