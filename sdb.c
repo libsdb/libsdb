@@ -726,8 +726,8 @@ int sdb_put_many(struct SDB* sdb, const char* domain, const char* item, size_t n
 	SDB_COMMAND_PARAM("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Attribute.%d.Name"   , i); SDB_COMMAND_PARAM(buf, keys[i]);
-		sprintf(buf, "Attribute.%d.Value"  , i); SDB_COMMAND_PARAM(buf, values[i]);
+		sprintf(buf, "Attribute.%d.Name"   , (unsigned) i); SDB_COMMAND_PARAM(buf, keys[i]);
+		sprintf(buf, "Attribute.%d.Value"  , (unsigned) i); SDB_COMMAND_PARAM(buf, values[i]);
 	}
 
 	SDB_COMMAND_EXECUTE("PutAttributes");
@@ -755,9 +755,9 @@ int sdb_replace_many(struct SDB* sdb, const char* domain, const char* item, size
 	SDB_COMMAND_PARAM("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Attribute.%d.Name"   , i); SDB_COMMAND_PARAM(buf, keys[i]);
-		sprintf(buf, "Attribute.%d.Value"  , i); SDB_COMMAND_PARAM(buf, values[i]);
-		sprintf(buf, "Attribute.%d.Replace", i); SDB_COMMAND_PARAM(buf, "true");
+		sprintf(buf, "Attribute.%d.Name"   , (unsigned) i); SDB_COMMAND_PARAM(buf, keys[i]);
+		sprintf(buf, "Attribute.%d.Value"  , (unsigned) i); SDB_COMMAND_PARAM(buf, values[i]);
+		sprintf(buf, "Attribute.%d.Replace", (unsigned) i); SDB_COMMAND_PARAM(buf, "true");
 	}
 
 	SDB_COMMAND_EXECUTE("PutAttributes");
@@ -788,10 +788,10 @@ int sdb_put_batch(struct SDB* sdb, const char* domain, size_t num, const struct 
 	SDB_COMMAND_PARAM("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Item.%d.ItemName", i); SDB_COMMAND_PARAM(buf, items[i].name);
+		sprintf(buf, "Item.%d.ItemName", (unsigned) i); SDB_COMMAND_PARAM(buf, items[i].name);
 		for (j = 0; j < items[i].size; j++) {
-			sprintf(buf, "Item.%d.Attribute.%d.Name"   , i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].name);
-			sprintf(buf, "Item.%d.Attribute.%d.Value"  , i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].value);
+			sprintf(buf, "Item.%d.Attribute.%d.Name"   , (unsigned) i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].name);
+			sprintf(buf, "Item.%d.Attribute.%d.Value"  , (unsigned) i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].value);
 		}
 	}
 
@@ -823,11 +823,11 @@ int sdb_replace_batch(struct SDB* sdb, const char* domain, size_t num, const str
 	SDB_COMMAND_PARAM("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Item.%d.ItemName", i); SDB_COMMAND_PARAM(buf, items[i].name);
+		sprintf(buf, "Item.%d.ItemName", (unsigned) i); SDB_COMMAND_PARAM(buf, items[i].name);
 		for (j = 0; j < items[i].size; j++) {
-			sprintf(buf, "Item.%d.Attribute.%d.Name"   , i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].name);
-			sprintf(buf, "Item.%d.Attribute.%d.Value"  , i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].value);
-			sprintf(buf, "Item.%d.Attribute.%d.Replace", i, j); SDB_COMMAND_PARAM(buf, "true");
+			sprintf(buf, "Item.%d.Attribute.%d.Name"   , (unsigned) i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].name);
+			sprintf(buf, "Item.%d.Attribute.%d.Value"  , (unsigned) i, j); SDB_COMMAND_PARAM(buf, items[i].attributes[j].value);
+			sprintf(buf, "Item.%d.Attribute.%d.Replace", (unsigned) i, j); SDB_COMMAND_PARAM(buf, "true");
 		}
 	}
 
@@ -891,7 +891,7 @@ int sdb_delete_attr_many(struct SDB* sdb, const char* domain, const char* item, 
 	SDB_COMMAND_PARAM("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Attribute.%d.Name", i); SDB_COMMAND_PARAM(buf, keys[i]);
+		sprintf(buf, "Attribute.%d.Name", (unsigned) i); SDB_COMMAND_PARAM(buf, keys[i]);
 	}
 
 	SDB_COMMAND_EXECUTE("DeleteAttributes");
@@ -941,8 +941,8 @@ int sdb_delete_attr_ext_many(struct SDB* sdb, const char* domain, const char* it
 	SDB_COMMAND_PARAM("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Attribute.%d.Name"   , i); SDB_COMMAND_PARAM(buf, keys[i]);
-		sprintf(buf, "Attribute.%d.Value"  , i); SDB_COMMAND_PARAM(buf, values[i]);
+		sprintf(buf, "Attribute.%d.Name"   , (unsigned) i); SDB_COMMAND_PARAM(buf, keys[i]);
+		sprintf(buf, "Attribute.%d.Value"  , (unsigned) i); SDB_COMMAND_PARAM(buf, values[i]);
 	}
 
 	SDB_COMMAND_EXECUTE("DeleteAttributes");
@@ -990,7 +990,7 @@ int sdb_get_many(struct SDB* sdb, const char* domain, const char* item, size_t n
 	SDB_COMMAND_PARAM("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "AttributeName.%d", i); SDB_COMMAND_PARAM(buf, keys[i]);
+		sprintf(buf, "AttributeName.%d", (unsigned) i); SDB_COMMAND_PARAM(buf, keys[i]);
 	}
 
 	SDB_COMMAND_EXECUTE_RS("GetAttributes");
@@ -1074,7 +1074,7 @@ int sdb_query_attr_many(struct SDB* sdb, const char* domain, const char* query,
 	SDB_COMMAND_PARAM("QueryExpression", query);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "AttributeName.%d", i); SDB_COMMAND_PARAM(buf, keys[i]);
+		sprintf(buf, "AttributeName.%d", (unsigned) i); SDB_COMMAND_PARAM(buf, keys[i]);
 	}
 
 	SDB_COMMAND_EXECUTE_RS("QueryWithAttributes");
@@ -1575,8 +1575,8 @@ sdb_multi sdb_multi_put_many(struct SDB* sdb, const char* domain, const char* it
 	SDB_COMMAND_PARAM_MULTI("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Attribute.%d.Name"   , i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
-		sprintf(buf, "Attribute.%d.Value"  , i); SDB_COMMAND_PARAM_MULTI(buf, values[i]);
+		sprintf(buf, "Attribute.%d.Name"   , (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
+		sprintf(buf, "Attribute.%d.Value"  , (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, values[i]);
 	}
 
 	SDB_COMMAND_EXECUTE_MULTI("PutAttributes");
@@ -1604,9 +1604,9 @@ sdb_multi sdb_multi_replace_many(struct SDB* sdb, const char* domain, const char
 	SDB_COMMAND_PARAM_MULTI("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Attribute.%d.Name"   , i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
-		sprintf(buf, "Attribute.%d.Value"  , i); SDB_COMMAND_PARAM_MULTI(buf, values[i]);
-		sprintf(buf, "Attribute.%d.Replace", i); SDB_COMMAND_PARAM_MULTI(buf, "true");
+		sprintf(buf, "Attribute.%d.Name"   , (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
+		sprintf(buf, "Attribute.%d.Value"  , (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, values[i]);
+		sprintf(buf, "Attribute.%d.Replace", (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, "true");
 	}
 
 	SDB_COMMAND_EXECUTE_MULTI("PutAttributes");
@@ -1637,10 +1637,10 @@ sdb_multi sdb_multi_put_batch(struct SDB* sdb, const char* domain, size_t num, c
 	SDB_COMMAND_PARAM_MULTI("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Item.%d.ItemName", i); SDB_COMMAND_PARAM_MULTI(buf, items[i].name);
+		sprintf(buf, "Item.%d.ItemName", (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, items[i].name);
 		for (j = 0; j < items[i].size; j++) {
-			sprintf(buf, "Item.%d.Attribute.%d.Name"   , i, j); SDB_COMMAND_PARAM_MULTI(buf, items[i].attributes[j].name);
-			sprintf(buf, "Item.%d.Attribute.%d.Value"  , i, j); SDB_COMMAND_PARAM_MULTI(buf, items[i].attributes[j].value);
+			sprintf(buf, "Item.%d.Attribute.%d.Name"   , (unsigned) i, j); SDB_COMMAND_PARAM_MULTI(buf, items[i].attributes[j].name);
+			sprintf(buf, "Item.%d.Attribute.%d.Value"  , (unsigned) i, j); SDB_COMMAND_PARAM_MULTI(buf, items[i].attributes[j].value);
 		}
 	}
 
@@ -1672,11 +1672,11 @@ sdb_multi sdb_multi_replace_batch(struct SDB* sdb, const char* domain, size_t nu
 	SDB_COMMAND_PARAM_MULTI("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Item.%d.ItemName", i); SDB_COMMAND_PARAM_MULTI(buf, items[i].name);
+		sprintf(buf, "Item.%d.ItemName", (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, items[i].name);
 		for (j = 0; j < items[i].size; j++) {
-			sprintf(buf, "Item.%d.Attribute.%d.Name"   , i, j); SDB_COMMAND_PARAM_MULTI(buf, items[i].attributes[j].name);
-			sprintf(buf, "Item.%d.Attribute.%d.Value"  , i, j); SDB_COMMAND_PARAM_MULTI(buf, items[i].attributes[j].value);
-			sprintf(buf, "Item.%d.Attribute.%d.Replace", i, j); SDB_COMMAND_PARAM_MULTI(buf, "true");
+			sprintf(buf, "Item.%d.Attribute.%d.Name"   , (unsigned) i, j); SDB_COMMAND_PARAM_MULTI(buf, items[i].attributes[j].name);
+			sprintf(buf, "Item.%d.Attribute.%d.Value"  , (unsigned) i, j); SDB_COMMAND_PARAM_MULTI(buf, items[i].attributes[j].value);
+			sprintf(buf, "Item.%d.Attribute.%d.Replace", (unsigned) i, j); SDB_COMMAND_PARAM_MULTI(buf, "true");
 		}
 	}
 
@@ -1740,7 +1740,7 @@ sdb_multi sdb_multi_delete_attr_many(struct SDB* sdb, const char* domain, const 
 	SDB_COMMAND_PARAM_MULTI("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Attribute.%d.Name", i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
+		sprintf(buf, "Attribute.%d.Name", (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
 	}
 
 	SDB_COMMAND_EXECUTE_MULTI("DeleteAttributes");
@@ -1790,8 +1790,8 @@ sdb_multi sdb_multi_delete_attr_ext_many(struct SDB* sdb, const char* domain, co
 	SDB_COMMAND_PARAM_MULTI("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "Attribute.%d.Name"   , i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
-		sprintf(buf, "Attribute.%d.Value"  , i); SDB_COMMAND_PARAM_MULTI(buf, values[i]);
+		sprintf(buf, "Attribute.%d.Name"   , (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
+		sprintf(buf, "Attribute.%d.Value"  , (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, values[i]);
 	}
 
 	SDB_COMMAND_EXECUTE_MULTI("DeleteAttributes");
@@ -1837,7 +1837,7 @@ sdb_multi sdb_multi_get_many(struct SDB* sdb, const char* domain, const char* it
 	SDB_COMMAND_PARAM_MULTI("DomainName", domain);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "AttributeName.%d", i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
+		sprintf(buf, "AttributeName.%d", (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
 	}
 
 	SDB_COMMAND_EXECUTE_MULTI("GetAttributes");
@@ -1918,7 +1918,7 @@ sdb_multi sdb_multi_query_attr_many(struct SDB* sdb, const char* domain, const c
 	SDB_COMMAND_PARAM_MULTI("QueryExpression", query);
 
 	for (i = 0; i < num; i++) {
-		sprintf(buf, "AttributeName.%d", i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
+		sprintf(buf, "AttributeName.%d", (unsigned) i); SDB_COMMAND_PARAM_MULTI(buf, keys[i]);
 	}
 
 	SDB_COMMAND_EXECUTE_MULTI("QueryWithAttributes");

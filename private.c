@@ -325,7 +325,7 @@ int sdb_timestamp(char* buffer)
 int sdb_sign(struct SDB* sdb, const char* str, char* buffer, size_t* plen)
 {
 	unsigned char md[EVP_MAX_MD_SIZE];
-	size_t mdl;
+	unsigned mdl;
 	
 	HMAC(EVP_sha256(), sdb->sdb_secret, sdb->sdb_secret_len, (const unsigned char*) str, strlen(str), md, &mdl);
 	 
