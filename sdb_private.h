@@ -46,8 +46,6 @@ extern "C" {
 #endif
 
 
-#define AWS_URL							"https://sdb.amazonaws.com"
-#define AWS_EU_URL						"https://sdb.eu-west-1.amazonaws.com"
 
 #define SDB_HTTP_HEADER_CONTENT_TYPE	"Content-Type: application/x-www-form-urlencoded; charset=utf-8"
 
@@ -158,13 +156,16 @@ struct SDB
 	
 	struct curl_slist *curl_headers;
 
-	char* aws_url;
-	
-	
+	// hold the domain ... (different for each region)
+	char* aws_region; // sdb.
+	char* aws_region_url; // e.g. https://sdb.
+
 	// SimpleDB Authentication
 	
 	char* sdb_key;
 	char* sdb_secret;
+
+	char* aws_url;
 	
 	size_t sdb_key_len;
 	size_t sdb_secret_len;

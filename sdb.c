@@ -33,7 +33,7 @@
  */
 
 #include "stdafx.h"
-#include "sdb.h"
+#include "include/sdb.h"
 #include "sdb_private.h"
 
 #include <libxml/parser.h>
@@ -121,12 +121,14 @@ int sdb_global_cleanup(void)
  * @param sdb a pointer to the SimpleDB handle
  * @param key the SimpleDB key
  * @param secret the SimpleDB secret key
+ * @param region for SimpleDB, e.g. "sdb.amazonaws.com"
  * @return SDB_OK if no errors occurred
  */
-int sdb_init(struct SDB** sdb, const char* key, const char* secret)
+int sdb_init(struct SDB** sdb, const char* key, const char* secret, const char * region)
 {
-	return sdb_init_ext(sdb, key, secret, AWS_URL);
+	return sdb_init_ext(sdb, key, secret, region);
 }
+
 
 
 /**
@@ -135,7 +137,7 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret)
  * @param sdb a pointer to the SimpleDB handle
  * @param key the SimpleDB key
  * @param secret the SimpleDB secret key
- * @param service the service URL
+ * @param service the region domain
  * @return SDB_OK if no errors occurred
  */
 int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const char* service)
@@ -146,12 +148,11 @@ int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const ch
 
 	assert(key != NULL);
 	assert(secret != NULL);
-
+	assert(service != NULL);
 
 	// Allocate the SDB handle
 
 	*sdb = (struct SDB*) malloc(sizeof(struct SDB));
-
 
 	// Copy arguments
 
@@ -160,9 +161,20 @@ int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const ch
 
 	(*sdb)->sdb_key_len = strlen(key);
 	(*sdb)->sdb_secret_len = strlen(secret);
-	
-	(*sdb)->aws_url = strdup(key);
 
+	//  ... region (domain only)
+	(*sdb)->aws_region = strdup(service);
+	// /// region (protocol and domain)
+	const size_t len_domain = 1 + strlen(service);
+	const size_t len_protocol = strlen(AWS_REGION_PROTOCOL);
+	char *p = malloc(len_domain + len_protocol);
+	memcpy(p, AWS_REGION_PROTOCOL, len_protocol);
+	memcpy(p + len_protocol, service, len_domain);
+	(*sdb)->aws_region_url = p;
+	
+
+    //
+	(*sdb)->aws_url = strdup(key);
 
 	// Set the HTTP headers
 
@@ -467,7 +479,7 @@ void sdb_set_auto_next(struct SDB* sdb, int value)
 void sdb_set_compression(struct SDB* sdb, int value)
 {
 	if (value > 0) {
-		curl_easy_setopt(sdb->curl_handle, CURLOPT_ENCODING, "gzip");
+		curl_easy_setopt(sdb->curl_handle, CURLOPT_ACCEPT_ENCODING, "gzip");
 	}
 }
 

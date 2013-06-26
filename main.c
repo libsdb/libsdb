@@ -33,8 +33,7 @@
  */
 
 #include "stdafx.h"
-#include "sdb.h"
-
+#include "include/sdb.h"
 #include <ctype.h>
 
 
@@ -101,7 +100,7 @@ int main(int argc, char** argv)
 	// Ask for the AWS access information or get it from /etc/passwd-s3fs, if available
 	
 	aws_id[0] = aws_secret[0] = '\0';
-	
+
 	if ((f = fopen("/etc/passwd-s3fs", "r")) != NULL) {
 		if (fgets(aws_id, BUF_SIZE, f) != NULL) {
 			
@@ -134,7 +133,7 @@ int main(int argc, char** argv)
 	// Initialize
 	
 	SDB_ASSERT(sdb_global_init());
-	SDB_ASSERT(sdb_init(&sdb, aws_id, aws_secret));
+	SDB_ASSERT(sdb_init(&sdb, aws_id, aws_secret, AWS_REGION));
 	
 	sdb_set_error_file(sdb, stderr);
 	
@@ -346,21 +345,21 @@ int main(int argc, char** argv)
 		
 		if (strcmp(cmd, "z") == 0) {
 			struct sdb_response* res;
-			int r, num = 10;
+			int num = 10;
 			sdb_set_auto_next(sdb, FALSE);
-			r = sdb_list_domains(sdb, &res);
+			sdb_list_domains(sdb, &res);
 			sdb_print(res);
 			while (res != NULL && res->has_more) {
-				r = sdb_next(sdb, &res, TRUE);
+				sdb_next(sdb, &res, TRUE);
 				sdb_print(res);
 				if (!(num --> 0)) break;
 			}
 			sdb_free(&res);
 			printf("---\n"); num = 10;
-			r = sdb_list_domains(sdb, &res);
+			sdb_list_domains(sdb, &res);
 			sdb_print(res);
 			while (res != NULL && res->has_more) {
-				r = sdb_next(sdb, &res, FALSE);
+				sdb_next(sdb, &res, FALSE);
 				sdb_print(res);
 				if (!(num --> 0)) break;
 			}

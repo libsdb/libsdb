@@ -1,0 +1,7 @@
+build/*
+.DS_Store
+*.*.sw?
+Makefile
+config.*
+sdb-config
+libsdb_config.h

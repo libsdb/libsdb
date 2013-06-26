@@ -57,6 +57,24 @@ extern "C" {
  */
 #define SDB_AWS_VERSION "2009-04-15"
 
+/*
+ * SimpleDB Regions
+ *
+ * See http://docs.aws.amazon.com/general/latest/gr/rande.html#sdb_region
+ *
+ */
+#define US_East_Northern_Virginia_Region   "sdb.amazonaws.com"
+#define US_West_Oregon_Region              "sdb.us-west-2.amazonaws.com"
+#define US_West_Northern_California Region "sdb.us-west-1.amazonaws.com"
+#define EU_Ireland_Region                  "sdb.eu-west-1.amazonaws.com"
+#define Asia_Pacific_Singapore_Region      "sdb.ap-southeast-1.amazonaws.com"
+#define Asia_Pacific_Sydney_Region         "sdb.ap-southeast-2.amazonaws.com"
+#define Asia_Pacific_Tokyo_Region          "sdb.ap-northeast-1.amazonaws.com"
+#define South_America_Sao_Paulo_Region     "sdb.sa-east-1.amazonaws.com"
+
+#define AWS_REGION_PROTOCOL                "https://"
+
+#define AWS_REGION US_East_Northern_Virginia_Region
 
 /*****************************************************************************/
 /*                                                                           */
@@ -328,7 +346,7 @@ int sdb_global_cleanup(void);
  * @param secret the SimpleDB secret key
  * @return SDB_OK if no errors occurred
  */
-int sdb_init(struct SDB** sdb, const char* key, const char* secret);
+int sdb_init(struct SDB** sdb, const char* key, const char* secret, const char* region);
 
 /**
  * Initialize the environment
