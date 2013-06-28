@@ -288,7 +288,7 @@ int main(int argc, char** argv)
 			else if (strcmp(arg1, "8") == 0) {
 				COMMAND(sdb_set_region(&sdb, AWS_SOUTH_AMERICA_SAO_PAULO_REGION));
 			} else {
-				printf("Unknown regions selected, expected 1 to 8 but got [");
+				printf("Unknown region selected, expected 1 to 8 but got [");
 				printf(arg1);
 				printf("]\n");
 			}
