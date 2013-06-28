@@ -157,8 +157,8 @@ struct SDB
 	struct curl_slist *curl_headers;
 
 	// hold the domain ... (different for each region)
-	char* aws_region; // sdb.
-	char* aws_region_url; // e.g. https://sdb.
+	char* aws_region; // sdb.amazonaws.com
+	char* aws_region_url; // e.g. https://sdb.amazonaws.com
 
 	// SimpleDB Authentication
 	
