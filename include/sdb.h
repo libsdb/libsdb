@@ -63,18 +63,18 @@ extern "C" {
  * See http://docs.aws.amazon.com/general/latest/gr/rande.html#sdb_region
  *
  */
-#define US_East_Northern_Virginia_Region   "sdb.amazonaws.com"
-#define US_West_Oregon_Region              "sdb.us-west-2.amazonaws.com"
-#define US_West_Northern_California Region "sdb.us-west-1.amazonaws.com"
-#define EU_Ireland_Region                  "sdb.eu-west-1.amazonaws.com"
-#define Asia_Pacific_Singapore_Region      "sdb.ap-southeast-1.amazonaws.com"
-#define Asia_Pacific_Sydney_Region         "sdb.ap-southeast-2.amazonaws.com"
-#define Asia_Pacific_Tokyo_Region          "sdb.ap-northeast-1.amazonaws.com"
-#define South_America_Sao_Paulo_Region     "sdb.sa-east-1.amazonaws.com"
+#define AWS_US_EAST_NORTHERN_VIRGINIA_REGION	"sdb.amazonaws.com"
+#define AWS_US_WEST_OREGON_REGION				"sdb.us-west-2.amazonaws.com"
+#define AWS_US_WEST_NORTHERN_CALIFORNIA_REGION	"sdb.us-west-1.amazonaws.com"
+#define AWS_EU_IRELAND_REGION					"sdb.eu-west-1.amazonaws.com"
+#define AWS_ASIA_PACIFIC_SINGAPORE_REGION		"sdb.ap-southeast-1.amazonaws.com"
+#define AWS_ASIA_PACIFIC_SYDNEY_REGION			"sdb.ap-southeast-2.amazonaws.com"
+#define AWS_ASIA_PACIFIC_TOKYO_REGION			"sdb.ap-northeast-1.amazonaws.com"
+#define AWS_SOUTH_AMERICA_SAO_PAULO_REGION		"sdb.sa-east-1.amazonaws.com"
 
-#define AWS_REGION_PROTOCOL                "https://"
+#define AWS_REGION_PROTOCOL						"https://"
 
-#define AWS_REGION US_East_Northern_Virginia_Region
+#define AWS_DEFAULT_REGION						AWS_US_EAST_NORTHERN_VIRGINIA_REGION
 
 /*****************************************************************************/
 /*                                                                           */
@@ -101,6 +101,7 @@ extern "C" {
 #define SDB_E_AWS_INTERNAL_ERROR_2	-13
 #define SDB_E_CURL_INTERNAL_ERROR	-14
 #define SDB_E_RETRY_FAILED			-15
+#define SDB_E_INVALID_REGION		-16
 
 #define SDB_CURL_ERROR(code)		(-1000 - (code))
 #define SDB_CURLM_ERROR(code)		(-1500 - (code))
@@ -358,6 +359,15 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret, const char* 
  * @return SDB_OK if no errors occurred
  */
 int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const char* service);
+
+
+/**
+ * Set the region of the database to use.
+ *
+ * @param name of the region domain.
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_set_region(struct SDB** sdb, const char* region_name);
 
 /**
  * Destroy the environment

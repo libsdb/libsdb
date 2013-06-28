@@ -116,6 +116,57 @@ int sdb_global_cleanup(void)
 
 
 /**
+ * Set the region of the database to use.
+ * 
+ * @param name of the region domain.
+ */
+int sdb_set_region(struct SDB** sdb, const char* region_name){
+
+
+	// Check that the region looks valid
+
+	//  ... can't be any shorter than this
+	if (strlen(region_name) < strlen("sdb.amazonaws.com")){
+		fprintf(stderr, "SimpleDB ERROR: Region name too short\n");
+		return SDB_E_INVALID_REGION;
+	}
+
+	// ... always starts with .sdb
+	if (strncmp(region_name, "sdb.", 4) != 0) {
+		fprintf(stderr, "SimpleDB ERROR: Region name doesn't start with 'sdb.'\n");
+		return SDB_E_INVALID_REGION;
+	}
+
+	// ... always ends with .amazonaws.com
+	if (strncmp(region_name + strlen(region_name) - 14, ".amazonaws.com", 14) != 0) {
+		fprintf(stderr, "SimpleDB ERROR: Region name doesn't end with '.amazonaws.com'\n");
+		return SDB_E_INVALID_REGION;
+	}
+
+	// set the region (domain only)
+	(*sdb)->aws_region = strdup(region_name);
+
+	// set the region (protocol and domain)
+	const size_t len_domain = strlen(region_name) + 1;
+
+	const size_t len_protocol = strlen(AWS_REGION_PROTOCOL);
+
+	// allocate the whole string, including the NULL byte
+	char *p = malloc(len_domain + len_protocol);
+
+	// copy the protocol
+	memcpy(p, AWS_REGION_PROTOCOL, len_protocol);
+
+	// copy the domain
+	memcpy(p + len_protocol, region_name, len_domain);
+
+	(*sdb)->aws_region_url = p;
+
+	return SDB_OK;
+
+}
+
+/**
  * Initialize the environment
  *
  * @param sdb a pointer to the SimpleDB handle
@@ -140,7 +191,7 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret, const char *
  * @param service the region domain
  * @return SDB_OK if no errors occurred
  */
-int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const char* service)
+int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const char* region)
 {
 	// Preliminary checks
 
@@ -148,7 +199,7 @@ int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const ch
 
 	assert(key != NULL);
 	assert(secret != NULL);
-	assert(service != NULL);
+	assert(region != NULL);
 
 	// Allocate the SDB handle
 
@@ -162,18 +213,6 @@ int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const ch
 	(*sdb)->sdb_key_len = strlen(key);
 	(*sdb)->sdb_secret_len = strlen(secret);
 
-	//  ... region (domain only)
-	(*sdb)->aws_region = strdup(service);
-	// /// region (protocol and domain)
-	const size_t len_domain = 1 + strlen(service);
-	const size_t len_protocol = strlen(AWS_REGION_PROTOCOL);
-	char *p = malloc(len_domain + len_protocol);
-	memcpy(p, AWS_REGION_PROTOCOL, len_protocol);
-	memcpy(p + len_protocol, service, len_domain);
-	(*sdb)->aws_region_url = p;
-	
-
-    //
 	(*sdb)->aws_url = strdup(key);
 
 	// Set the HTTP headers
@@ -217,7 +256,10 @@ int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const ch
 
 	sdb_clear_statistics(*sdb);
 
-	return SDB_OK;
+	// Set the region. Do this last, as a new region (after this code was
+	// written), may cause an unknown region error
+	return sdb_set_region(sdb, region);
+
 }
 
 

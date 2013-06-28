@@ -133,7 +133,7 @@ int main(int argc, char** argv)
 	// Initialize
 	
 	SDB_ASSERT(sdb_global_init());
-	SDB_ASSERT(sdb_init(&sdb, aws_id, aws_secret, AWS_REGION));
+	SDB_ASSERT(sdb_init(&sdb, aws_id, aws_secret, AWS_DEFAULT_REGION));
 	
 	sdb_set_error_file(sdb, stderr);
 	
@@ -153,6 +153,7 @@ int main(int argc, char** argv)
 		printf("  3) List domains                  9) Get all attributes\n");
 		printf("  4) Output domain meta-data      10) Query with attributes\n");
 		printf("  5) Delete an item               11) Query using SELECT\n");
+		printf(" 12) Change the region\n");
 		printf("\n");
 		
 		READ("Command", cmd);
@@ -246,6 +247,52 @@ int main(int argc, char** argv)
 			printf("Query using SELECT\n");
 			READ("Query", arg1);
 			COMMAND(sdb_select(sdb, arg1, &res)); 
+			continue;
+		}
+		if (strcmp(cmd, "12") == 0) {
+
+			printf("Please select the region:\n\n");
+			printf("  1) US East Northern Virginia Region\n");
+			printf("  2) US West Oregon Region\n");
+			printf("  3) US West Northern California Region\n");
+			printf("  4) EU Ireland Region\n");
+			printf("  5) Asia Pacific Singapore Region\n");
+			printf("  6) Asia Pacific Sydney Region\n" );
+			printf("  7) Asia Pacific Tokyo Region\n");
+			printf("  8) South America Sao Paulo Region\n");
+
+			// Either free form text, or the region itself
+			READ("\nRegion:", arg1);
+
+			if (strcmp(arg1, "1") == 0) {
+				COMMAND(sdb_set_region(&sdb, AWS_US_EAST_NORTHERN_VIRGINIA_REGION));
+			}
+			else if (strcmp(arg1, "2") == 0) {
+				COMMAND(sdb_set_region(&sdb, AWS_US_WEST_OREGON_REGION));
+			}
+			else if (strcmp(arg1, "3") == 0) {
+				COMMAND(sdb_set_region(&sdb, AWS_US_WEST_NORTHERN_CALIFORNIA_REGION));
+			}
+			else if (strcmp(arg1, "4") == 0) {
+				COMMAND(sdb_set_region(&sdb, AWS_EU_IRELAND_REGION));
+			}
+			else if (strcmp(arg1, "5") == 0) {
+				COMMAND(sdb_set_region(&sdb, AWS_ASIA_PACIFIC_SINGAPORE_REGION));
+			}
+			else if (strcmp(arg1, "6") == 0) {
+				COMMAND(sdb_set_region(&sdb, AWS_ASIA_PACIFIC_SYDNEY_REGION));
+			}
+			else if (strcmp(arg1, "7") == 0) {
+				COMMAND(sdb_set_region(&sdb, AWS_ASIA_PACIFIC_TOKYO_REGION));
+			}
+			else if (strcmp(arg1, "8") == 0) {
+				COMMAND(sdb_set_region(&sdb, AWS_SOUTH_AMERICA_SAO_PAULO_REGION));
+			} else {
+				printf("UNknown regions selected, expected 1 to 8 but got [");
+				printf(arg1);
+				printf("]\n");
+			}
+
 			continue;
 		}
 		
