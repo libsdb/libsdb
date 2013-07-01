@@ -191,7 +191,7 @@ int main(int argc, char** argv)
 		}
 
 		if (strcmp(cmd, "5") == 0) {
-			printf("Add an attribute\n");
+			printf("Delete an item\n");
 			READ("Domain", arg1);
 			READ("Item", arg2);
 			COMMAND(sdb_delete(sdb, arg1, arg2)); 
