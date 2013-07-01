@@ -57,6 +57,24 @@ extern "C" {
  */
 #define SDB_AWS_VERSION "2009-04-15"
 
+/*
+ * SimpleDB Regions
+ *
+ * See http://docs.aws.amazon.com/general/latest/gr/rande.html#sdb_region
+ *
+ */
+#define AWS_US_EAST_NORTHERN_VIRGINIA_REGION	"sdb.amazonaws.com"
+#define AWS_US_WEST_OREGON_REGION				"sdb.us-west-2.amazonaws.com"
+#define AWS_US_WEST_NORTHERN_CALIFORNIA_REGION	"sdb.us-west-1.amazonaws.com"
+#define AWS_EU_IRELAND_REGION					"sdb.eu-west-1.amazonaws.com"
+#define AWS_ASIA_PACIFIC_SINGAPORE_REGION		"sdb.ap-southeast-1.amazonaws.com"
+#define AWS_ASIA_PACIFIC_SYDNEY_REGION			"sdb.ap-southeast-2.amazonaws.com"
+#define AWS_ASIA_PACIFIC_TOKYO_REGION			"sdb.ap-northeast-1.amazonaws.com"
+#define AWS_SOUTH_AMERICA_SAO_PAULO_REGION		"sdb.sa-east-1.amazonaws.com"
+
+#define AWS_REGION_PROTOCOL						"https://"
+
+#define AWS_DEFAULT_REGION						AWS_US_EAST_NORTHERN_VIRGINIA_REGION
 
 /*****************************************************************************/
 /*                                                                           */
@@ -83,6 +101,7 @@ extern "C" {
 #define SDB_E_AWS_INTERNAL_ERROR_2	-13
 #define SDB_E_CURL_INTERNAL_ERROR	-14
 #define SDB_E_RETRY_FAILED			-15
+#define SDB_E_INVALID_REGION		-16
 
 #define SDB_CURL_ERROR(code)		(-1000 - (code))
 #define SDB_CURLM_ERROR(code)		(-1500 - (code))
@@ -328,7 +347,7 @@ int sdb_global_cleanup(void);
  * @param secret the SimpleDB secret key
  * @return SDB_OK if no errors occurred
  */
-int sdb_init(struct SDB** sdb, const char* key, const char* secret);
+int sdb_init(struct SDB** sdb, const char* key, const char* secret, const char* region);
 
 /**
  * Initialize the environment
@@ -340,6 +359,15 @@ int sdb_init(struct SDB** sdb, const char* key, const char* secret);
  * @return SDB_OK if no errors occurred
  */
 int sdb_init_ext(struct SDB** sdb, const char* key, const char* secret, const char* service);
+
+
+/**
+ * Set the region of the database to use.
+ *
+ * @param name of the region domain.
+ * @return SDB_OK if no errors occurred
+ */
+int sdb_set_region(struct SDB** sdb, const char* region_name);
 
 /**
  * Destroy the environment

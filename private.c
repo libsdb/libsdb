@@ -33,7 +33,7 @@
  */
 
 #include "stdafx.h"
-#include "sdb.h"
+#include "include/sdb.h"
 #include "sdb_private.h"
 
 #include <libxml/parser.h>
@@ -594,8 +594,8 @@ int sdb_params_export(struct SDB* sdb, struct sdb_params* params, char** pbuffer
 	*s = '\0';
 	
 	strcat(s, "POST\n");
-	strcat(s, "sdb.amazonaws.com\n");
-	strcat(s, "/\n");
+	strcat(s, sdb->aws_region);
+	strcat(s, "\n/\n");
 	strcat(s, b);
 	
 	// Create the signature and add it to the URL-encoded param string
@@ -760,7 +760,7 @@ int sdb_execute(struct SDB* sdb, const char* cmd, struct sdb_params* _params)
 	CURL* curl = sdb->curl_handle;
 	
 	sdb->rec.size = 0;
-	curl_easy_setopt(curl, CURLOPT_URL, AWS_URL);
+	curl_easy_setopt(curl, CURLOPT_URL, sdb->aws_region_url);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &sdb->rec);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
@@ -859,13 +859,12 @@ int sdb_execute_rs(struct SDB* sdb, const char* cmd, struct sdb_params* _params,
 	long postsize = strlen(post);
 	sdb_params_free(params);
 	
-	
 	// Configure Curl and execute the command
 	
 	CURL* curl = sdb->curl_handle;
 	
 	sdb->rec.size = 0;
-	curl_easy_setopt(curl, CURLOPT_URL, AWS_URL);
+	curl_easy_setopt(curl, CURLOPT_URL, sdb->aws_region_url);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, &sdb->rec);
 	curl_easy_setopt(curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, post);
@@ -1002,7 +1001,7 @@ sdb_multi sdb_execute_multi(struct SDB* sdb, const char* cmd, struct sdb_params*
 	// Create a Curl handle and defer it
 	
 	sdb->rec.size = 0;
-	curl_easy_setopt(m->curl, CURLOPT_URL, AWS_URL);
+	curl_easy_setopt(m->curl, CURLOPT_URL, sdb->aws_region_url);
 	curl_easy_setopt(m->curl, CURLOPT_WRITEDATA, &m->rec);
 	curl_easy_setopt(m->curl, CURLOPT_POST, 1L);
 	curl_easy_setopt(m->curl, CURLOPT_POSTFIELDS, post);
