@@ -71,7 +71,7 @@ int sdb_global_init(void)
 
 	// Initialize Curl
 
-	if (curl_global_init(CURL_GLOBAL_NOTHING) != 0) return SDB_E_CURL_INIT_FAILED;
+	if (curl_global_init(CURL_GLOBAL_ALL) != 0) return SDB_E_CURL_INIT_FAILED;
 
 
 	// Initialize global statistics
